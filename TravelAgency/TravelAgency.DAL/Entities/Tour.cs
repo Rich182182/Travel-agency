@@ -16,7 +16,6 @@ namespace TravelAgency.DAL.Entities
         public bool IsHot { get; set; }
         public decimal? Promotion { get; set; }
 
-        // Навігаційні властивості (для зв'язків у БД)
         public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
