@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
+using TravelAgency.DAL.Entities;
 using TravelAgency.DAL.Interfaces;
 
 namespace TravelAgency.DAL.Repositories
@@ -9,11 +10,30 @@ namespace TravelAgency.DAL.Repositories
     {
         private readonly AppDbContext _context;
         private IDbContextTransaction _currentTransaction;
+        private IRepository<User> _userRepository;
+        private IRepository<Booking> _bookingRepository;
+        private IRepository<Hotel> _hotelRepository;
+        private IRepository<Room> _roomRepository;
+        private IRepository<Tour> _tourRepository;
+        private IRepository<Ticket> _ticketRepository;
 
-        public UnitOfWork(AppDbContext context)
+        public UnitOfWork(AppDbContext context,
+            IRepository<User> userRepository,
+            IRepository<Booking> bookingRepository,
+            IRepository<Hotel> hotelRepository, 
+            IRepository<Room> roomRepository,
+            IRepository<Tour> tourRepository,
+            IRepository<Ticket> ticketRepository)
         {
             _context = context;
+            _userRepository = userRepository;
+            _bookingRepository = bookingRepository;
+            _hotelRepository = hotelRepository;
+            _roomRepository = roomRepository;
+            _tourRepository = tourRepository;
+            _ticketRepository = ticketRepository;
         }
+
 
         public async Task<int> SaveChangesAsync()
         {
@@ -24,7 +44,7 @@ namespace TravelAgency.DAL.Repositories
         {
             if (_currentTransaction != null)
             {
-                throw new InvalidOperationException("Транзакція вже запущена.");
+                throw new InvalidOperationException("Транзакция уже запущена.");
             }
             _currentTransaction = await _context.Database.BeginTransactionAsync();
         }
