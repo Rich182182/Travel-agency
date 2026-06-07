@@ -2,6 +2,7 @@
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.WebApi.Models.Requests;
+using TravelAgency.WebApi.Models.Responses;
 
 namespace TravelAgency.WebApi.Mapping
 {
@@ -11,6 +12,9 @@ namespace TravelAgency.WebApi.Mapping
         {
             CreateMap<RegisterRequest, RegisterUserDto>();
             CreateMap<LoginRequest, LoginUserDto>();
+
+            CreateMap<CreateBookingRequest, CreateBookingDto>();
+            CreateMap<BookingDto, BookingResponse>();
         }
     }
 }

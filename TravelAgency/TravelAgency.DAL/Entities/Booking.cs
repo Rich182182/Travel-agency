@@ -10,7 +10,7 @@
         public int TourId { get; set; }
         public Tour Tour { get; set; }
 
-        public int? RoomId { get; set; } // Nullable, бо екскурсійному туру готель не треба
+        public int? RoomId { get; set; }
         public Room Room { get; set; }
     }
 }
