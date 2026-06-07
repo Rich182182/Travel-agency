@@ -17,6 +17,8 @@ namespace TravelAgency.BLL.Mapping
             CreateMap<CreateBookingDto, Booking>()
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore());
+
+            CreateMap<User, UserDto>();
         }
     }
 }

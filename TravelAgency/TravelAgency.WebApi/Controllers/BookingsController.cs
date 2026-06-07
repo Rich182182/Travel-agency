@@ -69,6 +69,40 @@ namespace TravelAgency.WebApi.Controllers
             }
         }
 
+        [Authorize] 
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyBookings()
+        {
+            int userId = GetCurrentUserId();
+
+            var bookingsDto = await _bookingService.GetUserBookingsAsync(userId);
+            var response = _mapper.Map<IEnumerable<BookingResponse>>(bookingsDto);
+
+            return Ok(response);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBooking(int id, [FromBody] UpdateBookingRequest request)
+        {
+            try
+            {
+                int userId = GetCurrentUserId();
+                var dto = _mapper.Map<UpdateBookingDto>(request);
+
+                var resultDto = await _bookingService.UpdateBookingAsync(userId, id, dto);
+                var response = _mapper.Map<BookingResponse>(resultDto);
+
+                return Ok(response);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         private int GetCurrentUserId()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

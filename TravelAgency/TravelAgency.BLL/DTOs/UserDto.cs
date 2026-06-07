@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace TravelAgency.BLL.DTOs
 {
-    public class CreateBookingDto
+    public class UserDto
     {
-        public int TourId { get; set; }
-        public int? RoomId { get; set; }
-        public int? TicketId { get; set; }
+        public int Id { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
     }
 }

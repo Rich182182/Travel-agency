@@ -1,8 +1,7 @@
 ﻿namespace TravelAgency.WebApi.Models.Requests
 {
-    public class CreateBookingRequest
+    public class UpdateBookingRequest
     {
-        public int TourId { get; set; }
         public int? RoomId { get; set; }
         public int? TicketId { get; set; }
     }

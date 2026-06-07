@@ -6,5 +6,6 @@
         public int TourId { get; set; }
         public int? RoomId { get; set; }
         public decimal TotalPrice { get; set; }
+        public int? TicketId { get; set; }
     }
 }

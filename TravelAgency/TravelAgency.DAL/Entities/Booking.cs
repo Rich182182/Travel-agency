@@ -12,5 +12,8 @@
 
         public int? RoomId { get; set; }
         public Room Room { get; set; }
+
+        public int? TicketId { get; set; }
+        public Ticket Ticket { get; set; }
     }
 }

@@ -15,6 +15,11 @@ namespace TravelAgency.WebApi.Mapping
 
             CreateMap<CreateBookingRequest, CreateBookingDto>();
             CreateMap<BookingDto, BookingResponse>();
+
+            CreateMap<UserDto, UserResponse>();
+            CreateMap<ChangeRoleRequest, ChangeRoleDto>();
+
+            CreateMap<UpdateBookingRequest, UpdateBookingDto>();
         }
     }
 }
