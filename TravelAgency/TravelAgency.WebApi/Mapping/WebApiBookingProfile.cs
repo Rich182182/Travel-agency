@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using TravelAgency.BLL.DTOs.Users;
+using TravelAgency.WebApi.Models.Requests;
 
 namespace TravelAgency.WebApi.Mapping
 {
@@ -6,6 +8,7 @@ namespace TravelAgency.WebApi.Mapping
     {
         public WebApiBookingProfile()
         {
+            CreateMap<RegisterRequest, RegisterUserDto>();
         }
     }
 }

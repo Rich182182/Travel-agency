@@ -10,28 +10,29 @@ namespace TravelAgency.DAL.Repositories
     {
         private readonly AppDbContext _context;
         private IDbContextTransaction _currentTransaction;
-        private IRepository<User> _userRepository;
-        private IRepository<Booking> _bookingRepository;
-        private IRepository<Hotel> _hotelRepository;
-        private IRepository<Room> _roomRepository;
-        private IRepository<Tour> _tourRepository;
-        private IRepository<Ticket> _ticketRepository;
+        public IRepository<User> Users { get; }
+        public IRepository<Booking> Bookings { get; }
+        public IRepository<Hotel> Hotels { get; }
+        public IRepository<Room> Rooms { get; }
+        public IRepository<Tour> Tours { get; }
+        public IRepository<Ticket> Tickets { get; }
 
-        public UnitOfWork(AppDbContext context,
-            IRepository<User> userRepository,
-            IRepository<Booking> bookingRepository,
-            IRepository<Hotel> hotelRepository, 
-            IRepository<Room> roomRepository,
-            IRepository<Tour> tourRepository,
-            IRepository<Ticket> ticketRepository)
+        public UnitOfWork(
+            AppDbContext context,
+            IRepository<User> users,
+            IRepository<Booking> bookings,
+            IRepository<Hotel> hotels,
+            IRepository<Room> rooms,
+            IRepository<Tour> tours,
+            IRepository<Ticket> tickets)
         {
             _context = context;
-            _userRepository = userRepository;
-            _bookingRepository = bookingRepository;
-            _hotelRepository = hotelRepository;
-            _roomRepository = roomRepository;
-            _tourRepository = tourRepository;
-            _ticketRepository = ticketRepository;
+            Users = users;
+            Bookings = bookings;
+            Hotels = hotels;
+            Rooms = rooms;
+            Tours = tours;
+            Tickets = tickets;
         }
 
 

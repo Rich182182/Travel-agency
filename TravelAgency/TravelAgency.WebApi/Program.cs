@@ -3,7 +3,6 @@ using TravelAgency.WebApi.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Додаємо контролери
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -30,4 +29,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
