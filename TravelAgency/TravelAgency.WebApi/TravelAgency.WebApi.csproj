@@ -21,8 +21,4 @@
     <ProjectReference Include="..\TravelAgency.BLL\TravelAgency.BLL.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Responses\" />
-  </ItemGroup>
-
 </Project>

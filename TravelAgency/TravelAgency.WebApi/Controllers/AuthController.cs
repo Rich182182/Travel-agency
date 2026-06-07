@@ -1,9 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.WebApi.Models.Requests;
+using TravelAgency.WebApi.Models.Responses;
 
 namespace TravelAgency.WebApi.Controllers
 {
@@ -35,6 +39,45 @@ namespace TravelAgency.WebApi.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            try
+            {
+                var dto = _mapper.Map<LoginUserDto>(request);
+
+                var result = await _authService.LoginAsync(dto);
+
+
+                var response = new AuthResponse
+                {
+                    Token = result.Token,
+                    Role = result.Role
+                };
+
+                return Ok(response);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            return Ok(new
+            {
+                Id = userId,
+                Email = userEmail,
+                Role = userRole
+            });
         }
     }
 }
