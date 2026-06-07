@@ -8,7 +8,7 @@ namespace TravelAgency.DAL.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasIndex(u => u.Email).IsUnique(); // Email має бути унікальним
+            builder.HasIndex(u => u.Email).IsUnique();
             builder.Property(u => u.Role).IsRequired().HasMaxLength(50);
         }
     }

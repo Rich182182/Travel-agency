@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TravelAgency.DAL;
 
@@ -11,9 +12,11 @@ using TravelAgency.DAL;
 namespace TravelAgency.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607192836_SeedAdminUser")]
+    partial class SeedAdminUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,9 +209,9 @@ namespace TravelAgency.DAL.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 3,
-                            Email = "admin1@gmail.com",
-                            PasswordHash = "$2a$11$/br4b6HJ/4XgpH689omInOpF7OhGhHRd.eP7MfSwDOWBQ84dY0p8G",
+                            Id = 1,
+                            Email = "admin@gmail.com",
+                            PasswordHash = "$2a$11$pG4V7Y2y8R0L.D/3I.6g.OQk9u.T/Qk7eL5v8/1H1J9T/R0L.D/3I",
                             Role = "Admin"
                         });
                 });

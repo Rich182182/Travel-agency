@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using TravelAgency.BLL;
+using TravelAgency.WebApi.Extensions;
 using TravelAgency.WebApi.Mapping;
-
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,5 +84,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+await app.SeedAdminAsync();
 
 await app.RunAsync();
