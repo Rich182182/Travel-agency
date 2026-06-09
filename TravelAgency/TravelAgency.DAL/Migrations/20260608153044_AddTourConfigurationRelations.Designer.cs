@@ -12,8 +12,8 @@ using TravelAgency.DAL;
 namespace TravelAgency.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260607205807_SeedAdminUser3")]
-    partial class SeedAdminUser3
+    [Migration("20260608153044_AddTourConfigurationRelations")]
+    partial class AddTourConfigurationRelations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,9 @@ namespace TravelAgency.DAL.Migrations
                     b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RoomId1")
+                        .HasColumnType("int");
+
                     b.Property<int?>("TicketId")
                         .HasColumnType("int");
 
@@ -51,6 +54,8 @@ namespace TravelAgency.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
+
+                    b.HasIndex("RoomId1");
 
                     b.HasIndex("TicketId");
 
@@ -148,21 +153,24 @@ namespace TravelAgency.DAL.Migrations
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<bool>("IsHot")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -188,7 +196,8 @@ namespace TravelAgency.DAL.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -196,8 +205,8 @@ namespace TravelAgency.DAL.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -205,31 +214,28 @@ namespace TravelAgency.DAL.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 3,
-                            Email = "admin1@gmail.com",
-                            PasswordHash = "$2a$11$/br4b6HJ/4XgpH689omInOpF7OhGhHRd.eP7MfSwDOWBQ84dY0p8G",
-                            Role = "Admin"
-                        });
                 });
 
             modelBuilder.Entity("TravelAgency.DAL.Entities.Booking", b =>
                 {
                     b.HasOne("TravelAgency.DAL.Entities.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TravelAgency.DAL.Entities.Room", null)
                         .WithMany("Bookings")
-                        .HasForeignKey("RoomId");
+                        .HasForeignKey("RoomId1");
 
                     b.HasOne("TravelAgency.DAL.Entities.Ticket", "Ticket")
                         .WithMany()
-                        .HasForeignKey("TicketId");
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TravelAgency.DAL.Entities.Tour", "Tour")
                         .WithMany("Bookings")
                         .HasForeignKey("TourId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TravelAgency.DAL.Entities.User", "Client")

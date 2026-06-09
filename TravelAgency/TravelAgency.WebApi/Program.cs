@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models;
 using System.Text;
 using TravelAgency.BLL;
 using TravelAgency.WebApi.Extensions;
 using TravelAgency.WebApi.Mapping;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +31,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 
@@ -39,7 +43,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Введіть JWT токен у форматі: Bearer {ваш_токен}\nНаприклад: Bearer eyJhbGciOiJIUzI1NiI...",
+        Description = "пїЅпїЅпїЅпїЅпїЅпїЅ JWT пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: Bearer {пїЅпїЅпїЅ_пїЅпїЅпїЅпїЅпїЅ}\nпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: Bearer eyJhbGciOiJIUzI1NiI...",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -68,8 +72,8 @@ builder.Services.AddBusinessLogicLayer(connectionString);
 
 builder.Services.AddAutoMapper(cfg =>
 {
-    cfg.AddProfile<WebApiBookingProfile>(); 
-    cfg.AddProfile<WebApiTourProfile>(); 
+    cfg.AddProfile<WebApiBookingProfile>();
+    cfg.AddProfile<WebApiTourProfile>();
 });
 
 var app = builder.Build();
