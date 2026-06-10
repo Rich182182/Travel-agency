@@ -15,11 +15,12 @@ namespace TravelAgency.BLL
 
             services.AddAutoMapper(cfg =>
             {
-                cfg.AddProfile<BookingDomainProfile>(); 
-                cfg.AddProfile<TourDomainProfile>();  
+                cfg.AddProfile<BookingDomainProfile>();
+                cfg.AddProfile<TourDomainProfile>();
             });
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITourService, TourService>();
             services.AddScoped<IHotelService, HotelService>();
             services.AddScoped<IUserService, UserService>();

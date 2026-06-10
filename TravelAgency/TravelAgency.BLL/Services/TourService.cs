@@ -244,5 +244,17 @@ namespace TravelAgency.BLL.Services
 
             return _mapper.Map<IEnumerable<TourDto>>(filtered);
         }
+        public async Task<IEnumerable<TourDto>> GetByCityAsync(string city)
+        {
+            var tours = await _unitOfWork.Tours.GetAllAsync();
+
+            var filtered = tours
+                .Where(t => t.City.ToLower() == city.ToLower())
+                .ToList();
+
+            return _mapper.Map<IEnumerable<TourDto>>(filtered);
+
+        }
     }
+
 }
