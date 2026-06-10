@@ -252,9 +252,10 @@ namespace TravelAgency.BLL.Services
                 .Where(t => t.City.ToLower() == city.ToLower())
                 .ToList();
 
-            return _mapper.Map<IEnumerable<TourDto>>(filtered);
+            if (!filtered.Any())
+                throw new NotFoundException("Тури в цьому місті не знайдено.");
 
+            return _mapper.Map<IEnumerable<TourDto>>(filtered);
         }
     }
-
 }

@@ -116,5 +116,19 @@ namespace TravelAgency.WebApi.Controllers
                 return NotFound(new { error = ex.Message });
             }
         }
+
+        [HttpGet("city/{city}")]
+        public async Task<IActionResult> GetByCity(string city)
+        {
+            try
+            {
+                var tours = await _tourService.GetByCityAsync(city);
+                return Ok(tours);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+        }
     }
 }
