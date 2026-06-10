@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Enums;
+using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.WebApi.Models.Requests;
 
@@ -31,15 +32,29 @@ namespace TravelAgency.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var tour = await _tourService.GetByIdAsync(id);
-            return Ok(tour);
+            try
+            {
+                var tour = await _tourService.GetByIdAsync(id);
+                return Ok(tour);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
         }
 
         [HttpGet("hot")]
         public async Task<IActionResult> GetHot()
         {
-            var tours = await _tourService.GetHotToursAsync();
-            return Ok(tours);
+            try
+            {
+                var tours = await _tourService.GetHotToursAsync();
+                return Ok(tours);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
         }
 
         [HttpGet("type/{type}")]
@@ -53,26 +68,53 @@ namespace TravelAgency.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateTourRequest request)
         {
-            var dto = _mapper.Map<CreateTourDto>(request);
-            var result = await _tourService.CreateAsync(dto);
-            return Ok(result);
+            try
+            {
+                var dto = _mapper.Map<CreateTourDto>(request);
+                var result = await _tourService.CreateAsync(dto);
+
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateTourRequest request)
         {
-            var dto = _mapper.Map<UpdateTourDto>(request);
-            var result = await _tourService.UpdateAsync(id, dto);
-            return Ok(result);
+            try
+            {
+                var dto = _mapper.Map<UpdateTourDto>(request);
+                var result = await _tourService.UpdateAsync(id, dto);
+
+                return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _tourService.DeleteAsync(id);
-            return Ok(new { message = "Тур видалено" });
+            try
+            {
+                await _tourService.DeleteAsync(id);
+                return Ok(new { message = "Тур видалено" });
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
         }
     }
 }

@@ -1,31 +1,21 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
-using TravelAgency.WebApi.Models.Requests;
 
 namespace TravelAgency.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class HotelsController : ControllerBase
+    public class RoomsController : ControllerBase
     {
-        private readonly IHotelService _hotelService;
-        private readonly IMapper _mapper;
+        private readonly IRoomService _roomService;
 
-        public HotelsController(IHotelService hotelService, IMapper mapper)
+        public RoomsController(IRoomService roomService)
         {
-            _hotelService = hotelService;
-            _mapper = mapper;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var hotels = await _hotelService.GetAllAsync();
-            return Ok(hotels);
+            _roomService = roomService;
         }
 
         [HttpGet("{id}")]
@@ -33,8 +23,8 @@ namespace TravelAgency.WebApi.Controllers
         {
             try
             {
-                var hotel = await _hotelService.GetByIdAsync(id);
-                return Ok(hotel);
+                var result = await _roomService.GetByIdAsync(id);
+                return Ok(result);
             }
             catch (NotFoundException ex)
             {
@@ -42,16 +32,25 @@ namespace TravelAgency.WebApi.Controllers
             }
         }
 
+        [HttpGet("hotel/{hotelId}")]
+        public async Task<IActionResult> GetByHotel(int hotelId)
+        {
+            var result = await _roomService.GetByHotelIdAsync(hotelId);
+            return Ok(result);
+        }
+
         [Authorize(Roles = "Admin,Manager")]
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateHotelRequest request)
+        [HttpPost("{hotelId}")]
+        public async Task<IActionResult> Create(int hotelId, CreateRoomDto dto)
         {
             try
             {
-                var dto = _mapper.Map<CreateHotelDto>(request);
-                var result = await _hotelService.CreateAsync(dto);
-
+                var result = await _roomService.CreateAsync(hotelId, dto);
                 return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
             }
             catch (ValidationException ex)
             {
@@ -61,13 +60,11 @@ namespace TravelAgency.WebApi.Controllers
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateHotelRequest request)
+        public async Task<IActionResult> Update(int id, UpdateRoomDto dto)
         {
             try
             {
-                var dto = _mapper.Map<UpdateHotelDto>(request);
-                var result = await _hotelService.UpdateAsync(id, dto);
-
+                var result = await _roomService.UpdateAsync(id, dto);
                 return Ok(result);
             }
             catch (NotFoundException ex)
@@ -86,8 +83,8 @@ namespace TravelAgency.WebApi.Controllers
         {
             try
             {
-                await _hotelService.DeleteAsync(id);
-                return Ok(new { message = "Готель видалено" });
+                await _roomService.DeleteAsync(id);
+                return Ok(new { message = "Номер видалено" });
             }
             catch (NotFoundException ex)
             {
