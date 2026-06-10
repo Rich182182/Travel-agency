@@ -17,6 +17,11 @@ namespace TravelAgency.BLL
             {
                 cfg.AddProfile<BookingDomainProfile>();
                 cfg.AddProfile<TourDomainProfile>();
+<<<<<<< HEAD
+=======
+                cfg.AddProfile<HotelDomainProfile>();
+                cfg.AddProfile<RoomDomainProfile>();
+>>>>>>> hotels-module
             });
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IAuthService, AuthService>();
@@ -24,6 +29,7 @@ namespace TravelAgency.BLL
             services.AddScoped<ITourService, TourService>();
             services.AddScoped<IHotelService, HotelService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRoomService, RoomService>();
 
             return services;
         }

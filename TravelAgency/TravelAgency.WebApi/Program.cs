@@ -74,6 +74,8 @@ builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<WebApiBookingProfile>();
     cfg.AddProfile<WebApiTourProfile>();
+    cfg.AddProfile<WebApiHotelProfile>();
+    cfg.AddProfile<WebApiRoomProfile>();
 });
 
 var app = builder.Build();

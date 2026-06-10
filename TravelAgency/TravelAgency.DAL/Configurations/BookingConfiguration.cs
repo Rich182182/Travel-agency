@@ -20,7 +20,7 @@ namespace TravelAgency.DAL.Configurations
                             .OnDelete(DeleteBehavior.Restrict);
 
                      builder.HasOne(b => b.Room)
-                            .WithMany()
+                            .WithMany(r => r.Bookings)
                             .HasForeignKey(b => b.RoomId)
                             .OnDelete(DeleteBehavior.SetNull);
 
