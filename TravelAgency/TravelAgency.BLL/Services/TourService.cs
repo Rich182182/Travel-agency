@@ -51,18 +51,12 @@ namespace TravelAgency.BLL.Services
                 if (ticket.Price <= 0)
                     throw new ValidationException("Ціна квитка повинна бути більше 0.");
 
-                if (string.IsNullOrWhiteSpace(ticket.Type))
-                    throw new ValidationException("Тип квитка не може бути пустим.");
-
-                var normalized = ticket.Type.Trim().ToLower();
-
-                if (normalized != "airplane" && normalized != "bus")
-                    throw new ValidationException("Тип квитка має бути Airplane або Bus.");
+                var ticketType = ticket.Type; // BLL enum
 
                 tour.Tickets.Add(new Ticket
                 {
                     Price = ticket.Price,
-                    Type = normalized == "airplane" ? "Airplane" : "Bus",
+                    Type = (DAL.Entities.Enums.TicketType)ticketType, // 🔥 MAP BLL → DAL
                     Date = dto.Date,
                     Tour = tour
                 });
@@ -112,16 +106,11 @@ namespace TravelAgency.BLL.Services
 
             foreach (var ticketDto in dto.Tickets)
             {
-                if (string.IsNullOrWhiteSpace(ticketDto.Type))
-                    throw new ValidationException("Тип квитка не може бути пустим.");
-
                 if (ticketDto.Price <= 0)
                     throw new ValidationException("Ціна квитка повинна бути більше 0.");
 
-                var normalizedType = ticketDto.Type.Trim();
-
-                if (normalizedType != "Airplane" && normalizedType != "Bus")
-                    throw new ValidationException("Тип квитка має бути Airplane або Bus.");
+                if (!Enum.IsDefined(typeof(BLL.DTOs.Enums.TicketType), ticketDto.Type))
+                    throw new ValidationException("Невірний тип квитка.");
 
                 if (ticketDto.Id > 0)
                 {
@@ -131,7 +120,7 @@ namespace TravelAgency.BLL.Services
                         throw new NotFoundException("Квиток не знайдено.");
 
                     ticket.Price = ticketDto.Price;
-                    ticket.Type = normalizedType;
+                    ticket.Type = (DAL.Entities.Enums.TicketType)ticketDto.Type; // 🔥 MAP BLL → DAL
                     ticket.Date = dto.Date;
 
                     _unitOfWork.Tickets.Update(ticket);
@@ -141,7 +130,7 @@ namespace TravelAgency.BLL.Services
                     var newTicket = new Ticket
                     {
                         Price = ticketDto.Price,
-                        Type = normalizedType,
+                        Type = (DAL.Entities.Enums.TicketType)ticketDto.Type, // 🔥 MAP BLL → DAL
                         Date = dto.Date,
                         TourId = tour.Id
                     };

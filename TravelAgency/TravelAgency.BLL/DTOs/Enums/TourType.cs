@@ -2,7 +2,7 @@ namespace TravelAgency.BLL.DTOs.Enums
 {
     public enum TourType
     {
-        Excursion,
-        Regular
+        Excursion = 0,
+        Regular = 1
     }
 }
