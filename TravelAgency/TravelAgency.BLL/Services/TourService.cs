@@ -51,13 +51,18 @@ namespace TravelAgency.BLL.Services
                 if (ticket.Price <= 0)
                     throw new ValidationException("Ціна квитка повинна бути більше 0.");
 
-                if (!Enum.IsDefined(typeof(TicketType), ticket.Type))
-                    throw new ValidationException("Невірний тип квитка.");
+                if (string.IsNullOrWhiteSpace(ticket.Type))
+                    throw new ValidationException("Тип квитка не може бути пустим.");
+
+                var normalized = ticket.Type.Trim().ToLower();
+
+                if (normalized != "airplane" && normalized != "bus")
+                    throw new ValidationException("Тип квитка має бути Airplane або Bus.");
 
                 tour.Tickets.Add(new Ticket
                 {
                     Price = ticket.Price,
-                    Type = ticket.Type,
+                    Type = normalized == "airplane" ? "Airplane" : "Bus",
                     Date = dto.Date,
                     Tour = tour
                 });
