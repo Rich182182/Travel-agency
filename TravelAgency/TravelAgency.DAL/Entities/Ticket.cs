@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TravelAgency.DAL.Entities
+﻿namespace TravelAgency.DAL.Entities
 {
     public class Ticket : BaseEntity
     {
