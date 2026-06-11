@@ -2,52 +2,48 @@ export type TourType = 'Regular' | 'Excursion';
 export type Role = 'Admin' | 'Manager' | 'Registered' | 'Guest';
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
-  password?: string; // Додано пароль для автентифікації
   role: Role;
 }
 
 export interface Ticket {
-  id: string;
+  id?: number;
   type: string;
   price: number;
-  date: string;
 }
 
 export interface Room {
-  id: string;
+  id: number;
   name: string;
   price: number;
   isFree: boolean;
 }
 
 export interface Hotel {
-  id: string;
+  id: number;
   name: string;
   city: string;
-  rooms: Room[];
+  rooms?: Room[];
 }
 
 export interface Tour {
-  id: string;
+  id: number;
   name: string;
   price: number;
   city: string;
   description: string;
   date: string;
-  tourType: TourType;
-  isHot: boolean;
-  discount?: number;
+  type: TourType;
+  promotion?: number;
   tickets: Ticket[];
+  isHot?: boolean; // Якщо бекенд повертає це поле
 }
 
 export interface Booking {
-  id: string;
-  userId: string;
-  tourId: string;
-  ticketId: string;
-  hotelId?: string;
-  roomId?: string;
-  totalPrice: number;
-} 
+  id: number;
+  tourId: number;
+  ticketId?: number;
+  roomId?: number;
+  totalPrice?: number;
+}
