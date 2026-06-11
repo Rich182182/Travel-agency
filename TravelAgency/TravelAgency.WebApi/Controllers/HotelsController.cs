@@ -31,68 +31,40 @@ namespace TravelAgency.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            try
-            {
-                var hotel = await _hotelService.GetByIdAsync(id);
-                return Ok(hotel);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
+            var hotel = await _hotelService.GetByIdAsync(id);
+            return Ok(hotel);
+            
         }
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateHotelRequest request)
         {
-            try
-            {
-                var dto = _mapper.Map<CreateHotelDto>(request);
-                var result = await _hotelService.CreateAsync(dto);
+            var dto = _mapper.Map<CreateHotelDto>(request);
+            var result = await _hotelService.CreateAsync(dto);
 
-                return Ok(result);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(result);
+
         }
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateHotelRequest request)
         {
-            try
-            {
-                var dto = _mapper.Map<UpdateHotelDto>(request);
-                var result = await _hotelService.UpdateAsync(id, dto);
+            var dto = _mapper.Map<UpdateHotelDto>(request);
+            var result = await _hotelService.UpdateAsync(id, dto);
 
-                return Ok(result);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(result);
+
         }
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                await _hotelService.DeleteAsync(id);
-                return Ok(new { message = "Готель видалено" });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
+            await _hotelService.DeleteAsync(id);
+            return Ok(new { message = "Готель видалено" });
+
         }
     }
 }

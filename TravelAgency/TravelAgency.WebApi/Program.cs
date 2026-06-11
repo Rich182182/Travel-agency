@@ -6,6 +6,7 @@ using TravelAgency.BLL;
 using TravelAgency.WebApi.Extensions;
 using TravelAgency.WebApi.Mapping;
 using System.Text.Json.Serialization;
+using TravelAgency.WebApi.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +67,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddBusinessLogicLayer(connectionString);
@@ -79,6 +83,8 @@ builder.Services.AddAutoMapper(cfg =>
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

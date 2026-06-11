@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
@@ -36,24 +37,27 @@ namespace TravelAgency.WebApi.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPatch("{id}/role")]
         public async Task<IActionResult> ChangeRole(int id, [FromBody] ChangeRoleRequest request)
         {
-            try
-            {
-                var dto = _mapper.Map<ChangeRoleDto>(request);
-                await _userService.ChangeUserRoleAsync(id, dto.NewRole);
-                return Ok(new { message = $"Роль успішно змінено на {dto.NewRole}" });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            var dto = _mapper.Map<ChangeRoleDto>(request);
+            int currentAdminId = GetCurrentUserId();
+
+            await _userService.ChangeUserRoleAsync(currentAdminId, id, dto.NewRole);
+
+            return Ok(new { message = $"Роль успішно змінено на {dto.NewRole}" });
         }
+
         
+        private int GetCurrentUserId()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdString, out int userId))
+            {
+                return userId;
+            }
+            throw new ValidationException("Неможливо ідентифікувати користувача.");
+        }
     }
 }

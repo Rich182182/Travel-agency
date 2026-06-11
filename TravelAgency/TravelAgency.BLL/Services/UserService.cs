@@ -26,9 +26,14 @@ namespace TravelAgency.BLL.Services
             return _mapper.Map<IEnumerable<UserDto>>(users);
         }
 
-        public async Task ChangeUserRoleAsync(int userId, string newRole)
+        public async Task ChangeUserRoleAsync(int currentAdminId, int targetUserId, string newRole)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (currentAdminId == targetUserId)
+            {
+                throw new ValidationException("Ви не можете змінити роль самому собі.");
+            }
+
+            var user = await _unitOfWork.Users.GetByIdAsync(targetUserId);
             if (user == null)
             {
                 throw new NotFoundException("Користувача не знайдено.");
@@ -43,5 +48,7 @@ namespace TravelAgency.BLL.Services
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
         }
+
+        
     }
 }
