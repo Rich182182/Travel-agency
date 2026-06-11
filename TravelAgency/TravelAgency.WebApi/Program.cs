@@ -9,6 +9,18 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. ДОДАЄМО СЕРВІС CORS ТУТ
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") 
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); 
+    });
+});
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
 
@@ -38,12 +50,11 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "������ JWT ����� � ������: Bearer {���_�����}\n���������: Bearer eyJhbGciOiJIUzI1NiI...",
+        Description = "Введіть JWT токен у форматі: Bearer {ваш_токен}\nНаприклад: Bearer eyJhbGciOiJIUzI1NiI...",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -85,6 +96,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// 2. ВМИКАЄМО CORS У ПАЙПЛАЙНІ САМЕ ТУТ (обов'язково перед Authentication!)
+app.UseCors("AllowReactApp");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
