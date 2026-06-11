@@ -20,6 +20,8 @@ namespace TravelAgency.WebApi.Mapping
             CreateMap<ChangeRoleRequest, ChangeRoleDto>();
 
             CreateMap<UpdateBookingRequest, UpdateBookingDto>();
+
+            CreateMap<AddFavoriteRequest, AddFavoriteDto>();
         }
     }
 }
