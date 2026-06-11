@@ -6,6 +6,7 @@ using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
+using TravelAgency.BLL.Services;
 using TravelAgency.WebApi.Models.Requests;
 using TravelAgency.WebApi.Models.Responses;
 
@@ -51,6 +52,16 @@ namespace TravelAgency.WebApi.Controllers
             return Ok(response);
         }
         [Authorize]
+        [HttpDelete("me")]
+        public async Task<IActionResult> DeleteMe()
+        {
+            int userId = GetCurrentUserId();
+
+            await _authService.DeleteUserAsync(userId);
+
+            return Ok(new { message = "Ваш акаунт та всі ваші бронювання успішно видалено." });
+        }
+        [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
         {
@@ -65,6 +76,15 @@ namespace TravelAgency.WebApi.Controllers
                 Email = userEmail,
                 Role = userRole
             });
+        }
+        private int GetCurrentUserId()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdString, out int userId))
+            {
+                return userId;
+            }
+            throw new ValidationException("Неможливо ідентифікувати користувача.");
         }
     }
 }

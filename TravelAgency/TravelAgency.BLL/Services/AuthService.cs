@@ -84,6 +84,17 @@ namespace TravelAgency.BLL.Services
                 Role = user.Role
             };
         }
+        public async Task DeleteUserAsync(int userId)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new NotFoundException("Користувача не знайдено.");
+            }
+
+            _unitOfWork.Users.Delete(user);
+            await _unitOfWork.SaveChangesAsync();
+        }
 
     }
 }

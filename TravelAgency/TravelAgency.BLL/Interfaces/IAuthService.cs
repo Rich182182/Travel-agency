@@ -8,5 +8,6 @@ namespace TravelAgency.BLL.Interfaces
     {
         Task<AuthResponseDto> LoginAsync(LoginUserDto dto);
         Task RegisterAsync(RegisterUserDto dto);
+        Task DeleteUserAsync(int userId);
     }
 }

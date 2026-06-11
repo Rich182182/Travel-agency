@@ -8,6 +8,7 @@ namespace TravelAgency.BLL.Interfaces
     public interface IUserService
     {
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
-        Task ChangeUserRoleAsync(int userId, string newRole);
+        Task ChangeUserRoleAsync(int currentAdminId, int targetUserId, string newRole);
+        
     }
 }
