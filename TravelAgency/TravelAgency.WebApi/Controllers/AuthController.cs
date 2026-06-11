@@ -27,41 +27,28 @@ namespace TravelAgency.WebApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            try
-            {
-                var dto = _mapper.Map<RegisterUserDto>(request);
+            var dto = _mapper.Map<RegisterUserDto>(request);
 
-                await _authService.RegisterAsync(dto);
+            await _authService.RegisterAsync(dto);
 
-                return Ok(new { message = "Реєстрація пройшла успішно!" });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(new { message = "Реєстрація пройшла успішно!" });
+
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            try
+            var dto = _mapper.Map<LoginUserDto>(request);
+
+            var result = await _authService.LoginAsync(dto);
+
+
+            var response = new AuthResponse
             {
-                var dto = _mapper.Map<LoginUserDto>(request);
+                Token = result.Token,
+                Role = result.Role
+            };
 
-                var result = await _authService.LoginAsync(dto);
-
-
-                var response = new AuthResponse
-                {
-                    Token = result.Token,
-                    Role = result.Role
-                };
-
-                return Ok(response);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(response);
         }
         [Authorize]
         [HttpGet("me")]

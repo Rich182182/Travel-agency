@@ -39,20 +39,10 @@ namespace TravelAgency.WebApi.Controllers
         [HttpPatch("{id}/role")]
         public async Task<IActionResult> ChangeRole(int id, [FromBody] ChangeRoleRequest request)
         {
-            try
-            {
-                var dto = _mapper.Map<ChangeRoleDto>(request);
-                await _userService.ChangeUserRoleAsync(id, dto.NewRole);
-                return Ok(new { message = $"Роль успішно змінено на {dto.NewRole}" });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            var dto = _mapper.Map<ChangeRoleDto>(request);
+            await _userService.ChangeUserRoleAsync(id, dto.NewRole);
+            return Ok(new { message = $"Роль успішно змінено на {dto.NewRole}" });
+
         }
         
     }
