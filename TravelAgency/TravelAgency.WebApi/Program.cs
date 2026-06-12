@@ -20,8 +20,6 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-
-
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
 
@@ -51,12 +49,11 @@ builder.Services.AddControllers()
     });
 builder.Services.AddEndpointsApiExplorer();
 
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "������ JWT ����� � ������: Bearer {���_�����}\n���������: Bearer eyJhbGciOiJIUzI1NiI...",
+        Description = "Введіть JWT токен у форматі: Bearer {ваш_токен}\nНаприклад: Bearer eyJhbGciOiJIUzI1NiI...",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,

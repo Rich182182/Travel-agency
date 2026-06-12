@@ -32,7 +32,7 @@ export default function AdminPanelPage() {
         setUsers(usersRes.data);
       }
     } catch (error) {
-      console.error("Помилка завантаження даних адмін-панелі", error);
+      console.error("Помилка завантаження даних", error);
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,6 @@ export default function AdminPanelPage() {
     );
   }
 
-  // --- CRUD ДЛЯ КОРИСТУВАЧІВ ---
   const handleRoleChange = async (userId: number, newRole: string) => {
     try {
       await UsersAPI.changeRole(userId, newRole);
@@ -62,9 +61,27 @@ export default function AdminPanelPage() {
     }
   };
 
-  // --- CRUD ДЛЯ ТУРІВ ---
+  const normalizeRole = (roleStr?: string) => {
+    if (!roleStr) return 'Registered';
+    return roleStr.charAt(0).toUpperCase() + roleStr.slice(1).toLowerCase();
+  };
+
+  const formatTourType = (typeStr?: string): 'Regular' | 'Excursion' => {
+    if (!typeStr) return 'Regular';
+    const formatted = typeStr.charAt(0).toUpperCase() + typeStr.slice(1).toLowerCase();
+    return (formatted === 'Excursion') ? 'Excursion' : 'Regular';
+  };
+
   const saveTour = async () => {
     if (!editingTour) return;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const selectedDateStr = editingTour.date.split('T')[0];
+
+    if (selectedDateStr < todayStr) {
+      alert('Помилка! Не можна створити або зберегти тур із минулою датою.');
+      return;
+    }
     
     try {
       const payload = {
@@ -72,14 +89,24 @@ export default function AdminPanelPage() {
         price: Number(editingTour.price) || 0,
         city: editingTour.city || "Не вказано",
         description: editingTour.description || "",
-        date: new Date(editingTour.date || Date.now()).toISOString(),
-        type: editingTour.type,
+        date: new Date(editingTour.date).toISOString(),
+        type: formatTourType(editingTour.type), 
         promotion: editingTour.isHot ? (Number(editingTour.promotion) || 0) : 0,
-        tickets: editingTour.tickets.map(t => ({
-          id: t.id === 0 ? undefined : t.id,
-          type: t.type || "Стандарт",
-          price: Number(t.price) || 0
-        }))
+        tickets: editingTour.tickets.map(t => {
+          let backendType = t.type;
+          if (backendType === 'Авіа (Літак)') backendType = 'Airplane';
+          if (backendType === 'Автобус') backendType = 'Bus';
+
+          const ticketPayload = {
+            type: backendType || "Airplane",
+            price: Number(t.price) || 0
+          };
+          
+          if (editingTour.id !== 0 && t.id !== 0) {
+            (ticketPayload as any).id = t.id;
+          }
+          return ticketPayload;
+        })
       };
 
       if (editingTour.id === 0) {
@@ -114,7 +141,23 @@ export default function AdminPanelPage() {
     }
   };
 
-  // --- CRUD ДЛЯ ГОТЕЛІВ ТА НОМЕРІВ ---
+  const handleAddTicket = () => {
+    if (!editingTour) return;
+    const existingTypes = editingTour.tickets.map(t => 
+      t.type === 'Авіа (Літак)' ? 'Airplane' : (t.type === 'Автобус' ? 'Bus' : t.type)
+    );
+    const hasAirplane = existingTypes.includes('Airplane');
+    const hasBus = existingTypes.includes('Bus');
+
+    if (hasAirplane && hasBus) return;
+
+    const nextType = hasAirplane ? 'Bus' : 'Airplane';
+    setEditingTour({
+      ...editingTour, 
+      tickets: [...editingTour.tickets, { id: 0, type: nextType, price: 0 }]
+    });
+  };
+
   const saveHotelAndRooms = async () => {
     if (!editingHotel) return;
     try {
@@ -161,15 +204,11 @@ export default function AdminPanelPage() {
       await RoomsAPI.delete(roomId);
       const newRooms = editingHotel.rooms?.filter((_, i) => i !== index);
       setEditingHotel({ ...editingHotel, rooms: newRooms });
-    } catch (error) {
-      alert('Помилка при видаленні номера');
+    } catch (error: any) {
+      // РОЗУМНА ОБРОБКА ПОМИЛКИ ВИДАЛЕННЯ
+      console.error(error);
+      alert('Неможливо видалити цей номер! Скоріш за все, на нього вже існує активне бронювання користувача.');
     }
-  };
-
-  // Допоміжна функція для нормалізації ролей
-  const normalizeRole = (roleStr?: string) => {
-    if (!roleStr) return 'Registered';
-    return roleStr.charAt(0).toUpperCase() + roleStr.slice(1).toLowerCase();
   };
 
   if (isLoading) return <div className="flex justify-center mt-20"><Loader className="animate-spin text-blue-600" size={48} /></div>;
@@ -215,9 +254,6 @@ export default function AdminPanelPage() {
                         <option value="Admin">Admin</option>
                         <option value="Manager">Manager</option>
                         <option value="Registered">Registered</option>
-                        {currentRole !== 'Admin' && currentRole !== 'Manager' && currentRole !== 'Registered' && (
-                          <option value={currentRole}>{currentRole}</option>
-                        )}
                       </select>
                     </td>
                   </tr>
@@ -262,8 +298,9 @@ export default function AdminPanelPage() {
                 <input type="number" placeholder="Базова ціна (₴)" value={editingTour.price || ''} onChange={e => setEditingTour({...editingTour, price: Number(e.target.value)})} className="p-2 border rounded" />
                 <input type="date" value={editingTour.date} onChange={e => setEditingTour({...editingTour, date: e.target.value})} className="p-2 border rounded" />
                 
-                <select value={editingTour.type} onChange={e => setEditingTour({...editingTour, type: e.target.value as any})} className="p-2 border rounded">
-                  <option value="Regular">Звичайний</option><option value="Excursion">Екскурсійний</option>
+                <select value={formatTourType(editingTour.type)} onChange={e => setEditingTour({...editingTour, type: e.target.value as any})} className="p-2 border rounded">
+                  <option value="Regular">Звичайний</option>
+                  <option value="Excursion">Екскурсійний</option>
                 </select>
                 
                 <div className="flex items-center gap-4 border p-2 rounded">
@@ -276,15 +313,56 @@ export default function AdminPanelPage() {
               <div className="mb-6 border-t pt-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-bold text-lg">Квитки до цього туру</h3>
-                  <button onClick={() => setEditingTour({...editingTour, tickets: [...editingTour.tickets, { id: 0, type: '', price: 0 }]})} className="text-sm bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg font-medium">+ Додати квиток</button>
+                  
+                  {editingTour.tickets.length < 2 ? (
+                    <button onClick={handleAddTicket} className="text-sm bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg font-medium hover:bg-blue-200 transition-colors">
+                      + Додати квиток
+                    </button>
+                  ) : (
+                    <span className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">Всі типи квитків додано</span>
+                  )}
                 </div>
-                {editingTour.tickets.map((ticket, index) => (
-                  <div key={index} className="flex gap-2 mb-2 items-center">
-                    <input type="text" placeholder="Тип (напр. Авіа Економ)" value={ticket.type} onChange={e => { const n = [...editingTour.tickets]; n[index].type = e.target.value; setEditingTour({...editingTour, tickets: n}); }} className="p-2 border rounded flex-grow" />
-                    <input type="number" placeholder="Ціна (₴)" value={ticket.price || ''} onChange={e => { const n = [...editingTour.tickets]; n[index].price = Number(e.target.value); setEditingTour({...editingTour, tickets: n}); }} className="p-2 border rounded w-32" />
-                    <button onClick={() => setEditingTour({...editingTour, tickets: editingTour.tickets.filter((_, i) => i !== index)})} className="p-2 text-red-500"><Trash2 size={18} /></button>
-                  </div>
-                ))}
+
+                {editingTour.tickets.map((ticket, index) => {
+                  const currentNormType = ticket.type === 'Авіа (Літак)' ? 'Airplane' : (ticket.type === 'Автобус' ? 'Bus' : ticket.type);
+                  
+                  const usedTypes = editingTour.tickets
+                    .filter((_, i) => i !== index)
+                    .map(t => t.type === 'Авіа (Літак)' ? 'Airplane' : (t.type === 'Автобус' ? 'Bus' : t.type));
+
+                  return (
+                    <div key={index} className="flex gap-2 mb-2 items-center">
+                      <select 
+                        value={currentNormType} 
+                        onChange={e => { 
+                          const n = [...editingTour.tickets]; 
+                          n[index].type = e.target.value; 
+                          setEditingTour({...editingTour, tickets: n}); 
+                        }} 
+                        className="p-2 border rounded flex-grow bg-white focus:ring-2 focus:ring-blue-500"
+                      >
+                        {(!usedTypes.includes('Airplane') || currentNormType === 'Airplane') && <option value="Airplane">Авіа (Літак)</option>}
+                        {(!usedTypes.includes('Bus') || currentNormType === 'Bus') && <option value="Bus">Автобус</option>}
+                      </select>
+
+                      <input 
+                        type="number" 
+                        placeholder="Ціна (₴)" 
+                        value={ticket.price || ''} 
+                        onChange={e => { 
+                          const n = [...editingTour.tickets]; 
+                          n[index].price = Number(e.target.value); 
+                          setEditingTour({...editingTour, tickets: n}); 
+                        }} 
+                        className="p-2 border rounded w-32 focus:ring-2 focus:ring-blue-500" 
+                      />
+                      
+                      <button onClick={() => setEditingTour({...editingTour, tickets: editingTour.tickets.filter((_, i) => i !== index)})} className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors" title="Видалити квиток">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
               <button onClick={saveTour} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg"><Save size={20} className="inline mr-2" /> Зберегти тур</button>
             </div>
@@ -340,15 +418,9 @@ export default function AdminPanelPage() {
                       <input type="text" placeholder="Назва" value={room.name} onChange={e => { const n = [...editingHotel.rooms!]; n[index].name = e.target.value; setEditingHotel({...editingHotel, rooms: n}); }} className="p-2 border rounded flex-grow w-full md:w-auto" />
                       <input type="number" placeholder="Ціна (₴)" value={room.price || ''} onChange={e => { const n = [...editingHotel.rooms!]; n[index].price = Number(e.target.value); setEditingHotel({...editingHotel, rooms: n}); }} className="p-2 border rounded w-full md:w-32" />
                       
-                      {room.id === 0 ? (
-                         <span className="text-sm text-green-600 bg-green-50 px-3 py-1.5 rounded-lg font-medium border border-green-100">Вільний (за замовчуванням)</span>
-                      ) : (
-                        <label className="flex items-center gap-2 text-sm bg-white border p-2 rounded w-full md:w-auto cursor-pointer">
-                          <input type="checkbox" checked={room.isFree} onChange={e => { const n = [...editingHotel.rooms!]; n[index].isFree = e.target.checked; setEditingHotel({...editingHotel, rooms: n}); }} className="w-4 h-4 text-blue-600" /> Вільний
-                        </label>
-                      )}
-
-                      <button onClick={() => deleteRoomInline(room.id, index)} className="p-2 text-red-500 hover:bg-red-100 rounded w-full md:w-auto flex justify-center"><Trash2 size={18} /></button>
+                      {/* Чекбоксів "Вільний" більше немає, адмін впливає тільки на ціну та назву */}
+                      
+                      <button onClick={() => deleteRoomInline(room.id, index)} className="p-2 text-red-500 hover:bg-red-100 rounded w-full md:w-auto flex justify-center ml-auto" title="Видалити номер"><Trash2 size={18} /></button>
                     </div>
                   ))}
                 </div>

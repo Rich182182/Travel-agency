@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,9 @@ namespace TravelAgency.WebApi.Extensions
             {
                 var services = scope.ServiceProvider;
                 var context = services.GetRequiredService<AppDbContext>();
+
+                await context.Database.MigrateAsync();
+
                 if (!context.Users.Any(u => u.Email == "admin@gmail.com"))
                 {
                     string passwordHash = BCrypt.Net.BCrypt.HashPassword("123");
