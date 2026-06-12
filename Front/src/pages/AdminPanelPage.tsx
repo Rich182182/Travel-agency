@@ -4,7 +4,7 @@ import { ShieldAlert, UserCog, Map, Building, Edit, Trash2, Plus, Save, X, Loade
 import { ToursAPI, HotelsAPI, RoomsAPI, UsersAPI } from '../api/client';
 import { useNotification } from '../context/NotificationContext';
 import { parseBackendError } from '../api/errorHandler';
-import type { User, Role, Tour, Hotel } from '../types';
+import type { User, Role, Tour, Hotel, TicketType } from '../types';
 
 export default function AdminPanelPage() {
   const { user } = useAuth();
@@ -67,7 +67,8 @@ export default function AdminPanelPage() {
 
   const normalizeRole = (roleStr?: string) => {
     if (!roleStr) return 'Client';
-    return roleStr.charAt(0).toUpperCase() + roleStr.slice(1).toLowerCase();
+    const formatted = roleStr.charAt(0).toUpperCase() + roleStr.slice(1).toLowerCase();
+    return formatted === 'Registered' ? 'Client' : formatted;
   };
 
   const formatTourType = (typeStr?: string): 'Regular' | 'Excursion' => {
@@ -83,11 +84,11 @@ export default function AdminPanelPage() {
     if (!editingTour.city?.trim()) return showToast("Будь ласка, вкажіть місто.", "error");
     if (!editingTour.description?.trim()) return showToast("Будь ласка, додайте опис туру.", "error");
     if (!editingTour.price || Number(editingTour.price) <= 0) return showToast("Базова ціна туру має бути більшою за нуль.", "error");
-    if (editingTour.tickets.length === 0) return showToast("Додайте хоча б один тип квитка (Авіа або Автобус).", "error");
+    if (editingTour.tickets.length === 0) return showToast("Додайте хоча б один тип квитка.", "error");
 
     for (const ticket of editingTour.tickets) {
       if (!ticket.price || Number(ticket.price) <= 0) {
-        return showToast(`Вкажіть коректну ціну для квитка "${ticket.type}".`, "error");
+        return showToast(`Вкажіть коректну ціну для всіх квитків.`, "error");
       }
     }
 
@@ -109,7 +110,7 @@ export default function AdminPanelPage() {
           "Ви змінюєте тип туру або його місто. Якщо цей тур вже заброньовано клієнтами, це може спричинити серйозні помилки в їхніх особистих кабінетах! Рекомендується не змінювати ці параметри, а створити новий тур. Ви впевнені, що хочете продовжити?",
           () => executeTourSave()
         );
-        return;
+        return; 
       }
     }
 
@@ -128,17 +129,12 @@ export default function AdminPanelPage() {
         type: formatTourType(editingTour.type), 
         promotion: editingTour.isHot ? (Number(editingTour.promotion) || 0) : 0,
         tickets: editingTour.tickets.map(t => {
-          let backendType = t.type;
-          if (backendType === 'Авіа (Літак)') backendType = 'Airplane';
-          if (backendType === 'Автобус') backendType = 'Bus';
-
-          const ticketPayload = {
-            type: backendType || "Airplane",
+          const ticketPayload: any = {
+            type: t.type || "Airplane",
             price: Number(t.price) || 0
           };
-          
           if (editingTour.id !== 0 && t.id !== 0) {
-            (ticketPayload as any).id = t.id;
+            ticketPayload.id = t.id;
           }
           return ticketPayload;
         })
@@ -177,18 +173,17 @@ export default function AdminPanelPage() {
 
   const handleAddTicket = () => {
     if (!editingTour) return;
-    const existingTypes = editingTour.tickets.map(t => 
-      t.type === 'Авіа (Літак)' ? 'Airplane' : (t.type === 'Автобус' ? 'Bus' : t.type)
-    );
-    const hasAirplane = existingTypes.includes('Airplane');
-    const hasBus = existingTypes.includes('Bus');
+    const allTypes: TicketType[] = ['Airplane', 'Bus', 'Train', 'Ship'];
+    const existingTypes = editingTour.tickets.map(t => t.type);
+    
+    // Знаходимо перший вільний тип, якого ще немає у списку
+    const availableTypes = allTypes.filter(type => !existingTypes.includes(type));
+    
+    if (availableTypes.length === 0) return; // Якщо вже додано всі 4 типи
 
-    if (hasAirplane && hasBus) return;
-
-    const nextType = hasAirplane ? 'Bus' : 'Airplane';
     setEditingTour({
       ...editingTour, 
-      tickets: [...editingTour.tickets, { id: 0, type: nextType, price: 0 }]
+      tickets: [...editingTour.tickets, { id: 0, type: availableTypes[0], price: 0 }]
     });
   };
 
@@ -280,6 +275,7 @@ export default function AdminPanelPage() {
         <button onClick={() => setActiveTab('hotels')} className={`flex items-center gap-2 px-6 py-3 font-medium border-b-2 ${activeTab === 'hotels' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}><Building size={20} /> Готелі</button>
       </div>
 
+      {/* ВКЛАДКА: КОРИСТУВАЧІ */}
       {activeTab === 'users' && user.role === 'Admin' && (
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <table className="w-full text-left">
@@ -318,6 +314,7 @@ export default function AdminPanelPage() {
         </div>
       )}
 
+      {/* ВКЛАДКА: ТУРИ */}
       {activeTab === 'tours' && (
         <div>
           {!editingTour ? (
@@ -387,8 +384,8 @@ export default function AdminPanelPage() {
                 
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Промоакція</label>
-                  <div className="flex items-center gap-4 border p-0.75 rounded min-h-10.5 bg-white">
-                    <label className="flex items-center gap-2 cursor-pointer font-medium whitespace-nowrap pl-1 text-sm">
+                  <div className="flex items-center gap-4 border p-1.5 rounded min-h-10.5 bg-white">
+                    <label className="flex items-center gap-2 cursor-pointer font-medium whitespace-nowrap shrink-0 pl-1 text-sm">
                       <input type="checkbox" checked={editingTour.isHot} onChange={e => setEditingTour({...editingTour, isHot: e.target.checked})} className="w-4 h-4 text-blue-600 shrink-0" />
                       Гарячий тур
                     </label>
@@ -412,35 +409,34 @@ export default function AdminPanelPage() {
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-bold text-lg">Квитки до цього туру <span className="text-red-500">*</span></h3>
                   
-                  {editingTour.tickets.length < 2 ? (
+                  {/* Перевіряємо, чи менше ніж 4 квитки */}
+                  {editingTour.tickets.length < 4 ? (
                     <button onClick={handleAddTicket} className="text-sm bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg font-medium hover:bg-blue-200 transition-colors">
                       + Додати квиток
                     </button>
                   ) : (
-                    <span className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">Всі типи квитків додано</span>
+                    <span className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">Всі 4 типи квитків додано</span>
                   )}
                 </div>
 
                 {editingTour.tickets.map((ticket, index) => {
-                  const currentNormType = ticket.type === 'Авіа (Літак)' ? 'Airplane' : (ticket.type === 'Автобус' ? 'Bus' : ticket.type);
-                  
-                  const usedTypes = editingTour.tickets
-                    .filter((_, i) => i !== index)
-                    .map(t => t.type === 'Авіа (Літак)' ? 'Airplane' : (t.type === 'Автобус' ? 'Bus' : t.type));
+                  const usedTypes = editingTour.tickets.filter((_, i) => i !== index).map(t => t.type);
 
                   return (
                     <div key={index} className="flex gap-2 mb-2 items-center">
                       <select 
-                        value={currentNormType} 
+                        value={ticket.type} 
                         onChange={e => { 
                           const n = [...editingTour.tickets]; 
-                          n[index].type = e.target.value; 
+                          n[index].type = e.target.value as TicketType; 
                           setEditingTour({...editingTour, tickets: n}); 
                         }} 
                         className="p-2 border rounded grow bg-white focus:ring-2 focus:ring-blue-500"
                       >
-                        {(!usedTypes.includes('Airplane') || currentNormType === 'Airplane') && <option value="Airplane">Авіа (Літак)</option>}
-                        {(!usedTypes.includes('Bus') || currentNormType === 'Bus') && <option value="Bus">Автобус</option>}
+                        {(!usedTypes.includes('Airplane') || ticket.type === 'Airplane') && <option value="Airplane">Авіа (Літак)</option>}
+                        {(!usedTypes.includes('Bus') || ticket.type === 'Bus') && <option value="Bus">Автобус</option>}
+                        {(!usedTypes.includes('Train') || ticket.type === 'Train') && <option value="Train">Потяг</option>}
+                        {(!usedTypes.includes('Ship') || ticket.type === 'Ship') && <option value="Ship">Корабель / Паром</option>}
                       </select>
 
                       <input 
@@ -468,6 +464,7 @@ export default function AdminPanelPage() {
         </div>
       )}
 
+      {/* ВКЛАДКА: ГОТЕЛІ */}
       {activeTab === 'hotels' && (
         <div>
           {!editingHotel ? (

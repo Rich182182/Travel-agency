@@ -90,10 +90,12 @@ export default function TourDetailsPage() {
     }
   };
 
-  const translateTicket = (typeStr: string) => {
+  const translateTicket = (typeStr?: string) => {
     if (typeStr === 'Airplane') return 'Авіа (Літак)';
     if (typeStr === 'Bus') return 'Автобус';
-    return typeStr;
+    if (typeStr === 'Train') return 'Потяг';
+    if (typeStr === 'Ship') return 'Корабель / Паром';
+    return typeStr || 'Невідомо';
   };
 
   const translateRoomType = (typeStr?: string) => {

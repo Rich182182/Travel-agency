@@ -86,6 +86,8 @@ export default function MyBookingsPage() {
   const translateTicket = (typeStr?: string) => {
     if (typeStr === 'Airplane') return 'Авіа (Літак)';
     if (typeStr === 'Bus') return 'Автобус';
+    if (typeStr === 'Train') return 'Потяг';
+    if (typeStr === 'Ship') return 'Корабель / Паром';
     return typeStr || 'Невідомо';
   };
 

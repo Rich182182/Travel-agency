@@ -1,4 +1,4 @@
-export type Role = 'Admin' | 'Manager' | 'Registered';
+export type Role = 'Admin' | 'Manager' | 'Client';
 
 export interface User {
   id: number;
@@ -6,9 +6,11 @@ export interface User {
   role: Role;
 }
 
+export type TicketType = 'Airplane' | 'Bus' | 'Train' | 'Ship';
+
 export interface Ticket {
   id: number;
-  type: string;
+  type: TicketType; 
   price: number;
 }
 
