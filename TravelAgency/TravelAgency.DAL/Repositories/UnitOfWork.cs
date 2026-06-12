@@ -25,7 +25,8 @@ namespace TravelAgency.DAL.Repositories
             IRepository<Hotel> hotels,
             IRepository<Room> rooms,
             IRepository<Tour> tours,
-            IRepository<Ticket> tickets)
+            IRepository<Ticket> tickets,
+            IRepository<FavoriteTour> favoriteTours)
         {
             _context = context;
             Users = users;
@@ -34,6 +35,7 @@ namespace TravelAgency.DAL.Repositories
             Rooms = rooms;
             Tours = tours;
             Tickets = tickets;
+            FavoriteTours = favoriteTours;
         }
 
 

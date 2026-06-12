@@ -11,7 +11,9 @@ export function useFavorites() {
       FavoritesAPI.getAll()
         .then(response => {
           // Бекенд може повертати масив об'єктів Tour або Favorite. Беремо id туру.
-          const ids = response.data.map((item: any) => (item.tourId || item.id).toString());
+          const ids = response.data.map((item: any) => 
+              (typeof item === 'object' ? (item.tourId || item.id) : item).toString()
+          );
           setFavorites(ids);
         })
         .catch(err => console.error("Помилка завантаження улюблених", err));
