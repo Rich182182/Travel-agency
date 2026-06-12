@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using TravelAgency.BLL;
-using TravelAgency.WebApi.Extensions;
-using TravelAgency.WebApi.Mapping;
 using System.Text.Json.Serialization;
+using TravelAgency.BLL;
+using TravelAgency.BLL.Interfaces;
 using TravelAgency.WebApi.Infrastructure;
+using TravelAgency.WebApi.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,6 +95,12 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializationService>();
+    await dbInitializer.InitializeAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -108,7 +114,5 @@ app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-await app.SeedAdminAsync();
 
 await app.RunAsync();

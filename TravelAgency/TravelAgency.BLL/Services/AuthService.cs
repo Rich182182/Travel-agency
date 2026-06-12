@@ -14,7 +14,7 @@ using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.DAL.Entities;
 using TravelAgency.DAL.Interfaces;
-using TravelAgency.DAL.Repositories;
+using TravelAgency.DAL.Entities.Enums;
 using BCrypt.Net;
 
 namespace TravelAgency.BLL.Services
@@ -43,10 +43,12 @@ namespace TravelAgency.BLL.Services
             var newUser = _mapper.Map<User>(dto);
 
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            newUser.Role = Role.Client; // <--- Видаємо стандартну роль при реєстрації
 
             await _unitOfWork.Users.AddAsync(newUser);
             await _unitOfWork.SaveChangesAsync();
         }
+
         public async Task<AuthResponseDto> LoginAsync(LoginUserDto dto)
         {
             var users = await _unitOfWork.Users.GetAllAsync();
@@ -64,10 +66,10 @@ namespace TravelAgency.BLL.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
-            }),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role.ToString()) // <--- Конвертуємо у тип string
+                }),
                 Expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiryMinutes"])),
                 Issuer = _configuration["JwtSettings:Issuer"],
                 Audience = _configuration["JwtSettings:Audience"],
@@ -84,6 +86,7 @@ namespace TravelAgency.BLL.Services
                 Role = user.Role
             };
         }
+
         public async Task DeleteUserAsync(int userId)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(userId);
@@ -95,6 +98,5 @@ namespace TravelAgency.BLL.Services
             _unitOfWork.Users.Delete(user);
             await _unitOfWork.SaveChangesAsync();
         }
-
     }
 }

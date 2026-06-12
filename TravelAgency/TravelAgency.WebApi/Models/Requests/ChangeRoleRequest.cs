@@ -1,7 +1,9 @@
-﻿namespace TravelAgency.WebApi.Models.Requests
+﻿using TravelAgency.DAL.Entities.Enums;
+
+namespace TravelAgency.WebApi.Models.Requests
 {
     public class ChangeRoleRequest
     {
-        public string NewRole { get; set; }
+        public Role NewRole { get; set; }
     }
 }

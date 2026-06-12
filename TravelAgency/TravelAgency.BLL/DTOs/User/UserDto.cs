@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TravelAgency.DAL.Entities.Enums;
 
 namespace TravelAgency.BLL.DTOs
 {
@@ -10,6 +11,6 @@ namespace TravelAgency.BLL.DTOs
     {
         public int Id { get; set; }
         public string Email { get; set; }
-        public string Role { get; set; }
+        public Role Role { get; set; }
     }
 }
