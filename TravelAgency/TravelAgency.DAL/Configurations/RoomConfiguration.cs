@@ -10,9 +10,9 @@ namespace TravelAgency.DAL.Configurations
         {
             builder.HasKey(r => r.Id);
 
-            builder.Property(r => r.Name)
+            builder.Property(r => r.RoomType)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasConversion<int>();
 
             builder.Property(r => r.Price)
                 .HasColumnType("decimal(18,2)")

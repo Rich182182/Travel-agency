@@ -17,7 +17,6 @@ namespace TravelAgency.BLL.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-
         public async Task<RoomDto> CreateAsync(int hotelId, CreateRoomDto dto)
         {
             var hotel = await _unitOfWork.Hotels.GetByIdAsync(hotelId);
@@ -25,15 +24,17 @@ namespace TravelAgency.BLL.Services
             if (hotel == null)
                 throw new NotFoundException("Готель не знайдено.");
 
-            if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ValidationException("Назва кімнати не може бути пустою.");
+            var roomType = (DAL.Entities.Enums.RoomType)dto.RoomType;
+
+            if (!Enum.IsDefined(typeof(DAL.Entities.Enums.RoomType), roomType))
+                throw new ValidationException("Невірний тип кімнати.");
 
             if (dto.Price <= 0)
                 throw new ValidationException("Ціна має бути більше 0.");
 
             var room = new Room
             {
-                Name = dto.Name,
+                RoomType = roomType,
                 Price = dto.Price,
                 IsFree = true,
                 HotelId = hotelId
@@ -44,7 +45,6 @@ namespace TravelAgency.BLL.Services
 
             return _mapper.Map<RoomDto>(room);
         }
-
         public async Task<RoomDto> UpdateAsync(int id, UpdateRoomDto dto)
         {
             var room = await _unitOfWork.Rooms.GetByIdAsync(id);
@@ -52,13 +52,15 @@ namespace TravelAgency.BLL.Services
             if (room == null)
                 throw new NotFoundException("Кімнату не знайдено.");
 
-            if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ValidationException("Назва не може бути пустою.");
+            var roomType = (DAL.Entities.Enums.RoomType)dto.RoomType;
+
+            if (!Enum.IsDefined(typeof(DAL.Entities.Enums.RoomType), roomType))
+                throw new ValidationException("Невірний тип кімнати.");
 
             if (dto.Price <= 0)
                 throw new ValidationException("Ціна має бути більше 0.");
 
-            room.Name = dto.Name;
+            room.RoomType = roomType;
             room.Price = dto.Price;
             room.IsFree = dto.IsFree;
 
@@ -70,21 +72,17 @@ namespace TravelAgency.BLL.Services
 
         public async Task DeleteAsync(int id)
         {
-
             var room = await _unitOfWork.Rooms.GetByIdAsync(id);
 
             if (room == null)
-
                 throw new NotFoundException("Кімнату не знайдено.");
 
             var bookings = await _unitOfWork.Bookings.GetAllAsync();
 
             if (bookings.Any(b => b.RoomId == id))
-
                 throw new ValidationException("Неможливо видалити кімнату, оскільки вона використовується в бронюваннях.");
 
             _unitOfWork.Rooms.Delete(room);
-
             await _unitOfWork.SaveChangesAsync();
         }
 

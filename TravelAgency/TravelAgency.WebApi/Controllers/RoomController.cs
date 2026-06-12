@@ -2,7 +2,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravelAgency.BLL.DTOs;
-using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 
 namespace TravelAgency.WebApi.Controllers
@@ -23,7 +22,6 @@ namespace TravelAgency.WebApi.Controllers
         {
             var result = await _roomService.GetByIdAsync(id);
             return Ok(result);
-
         }
 
         [HttpGet("hotel/{hotelId}")]
@@ -35,7 +33,7 @@ namespace TravelAgency.WebApi.Controllers
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPost("{hotelId}")]
-        public async Task<IActionResult> Create(int hotelId, CreateRoomDto dto)
+        public async Task<IActionResult> Create(int hotelId, [FromBody] CreateRoomDto dto)
         {
             var result = await _roomService.CreateAsync(hotelId, dto);
             return Ok(result);
@@ -43,11 +41,10 @@ namespace TravelAgency.WebApi.Controllers
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateRoomDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateRoomDto dto)
         {
             var result = await _roomService.UpdateAsync(id, dto);
             return Ok(result);
-
         }
 
         [Authorize(Roles = "Admin,Manager")]
@@ -56,7 +53,6 @@ namespace TravelAgency.WebApi.Controllers
         {
             await _roomService.DeleteAsync(id);
             return Ok(new { message = "Номер видалено" });
-         
         }
     }
 }

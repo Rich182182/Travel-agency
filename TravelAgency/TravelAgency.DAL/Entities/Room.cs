@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using TravelAgency.DAL.Entities.Enums;
 
 namespace TravelAgency.DAL.Entities
 {
     public class Room : BaseEntity
     {
-        public string Name { get; set; }
+        public RoomType RoomType { get; set; }
         public decimal Price { get; set; }
         public bool IsFree { get; set; }
 

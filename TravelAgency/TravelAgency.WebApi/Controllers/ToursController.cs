@@ -52,7 +52,7 @@ namespace TravelAgency.WebApi.Controllers
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
-        public async Task<IActionResult> Create(CreateTourRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateTourRequest request)
         {
             var dto = _mapper.Map<CreateTourDto>(request);
             var result = await _tourService.CreateAsync(dto);
@@ -62,7 +62,7 @@ namespace TravelAgency.WebApi.Controllers
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateTourRequest request)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTourRequest request)
         {
             var dto = _mapper.Map<UpdateTourDto>(request);
             var result = await _tourService.UpdateAsync(id, dto);

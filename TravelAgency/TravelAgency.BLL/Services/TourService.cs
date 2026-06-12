@@ -54,18 +54,10 @@ namespace TravelAgency.BLL.Services
                 if (ticket.Price <= 0)
                     throw new ValidationException("Ціна квитка повинна бути більше 0.");
 
-                if (string.IsNullOrWhiteSpace(ticket.Type))
-                    throw new ValidationException("Тип квитка не може бути пустим.");
-
-                var normalized = ticket.Type.Trim().ToLower();
-
-                if (normalized != "airplane" && normalized != "bus")
-                    throw new ValidationException("Тип квитка має бути Airplane або Bus.");
-
                 tour.Tickets.Add(new Ticket
                 {
                     Price = ticket.Price,
-                    Type = normalized == "airplane" ? "Airplane" : "Bus",
+                    Type = (DAL.Entities.Enums.TicketType)ticket.Type,
                     Date = dto.Date,
                     Tour = tour
                 });
@@ -99,7 +91,6 @@ namespace TravelAgency.BLL.Services
             if (dto.Tickets == null || dto.Tickets.Count == 0)
                 throw new ValidationException("Тур повинен містити хоча б 1 квиток.");
 
-
             tour.Name = dto.Name;
             tour.Price = dto.Price;
             tour.City = dto.City;
@@ -115,16 +106,8 @@ namespace TravelAgency.BLL.Services
 
             foreach (var ticketDto in dto.Tickets)
             {
-                if (string.IsNullOrWhiteSpace(ticketDto.Type))
-                    throw new ValidationException("Тип квитка не може бути пустим.");
-
                 if (ticketDto.Price <= 0)
                     throw new ValidationException("Ціна квитка повинна бути більше 0.");
-
-                var normalizedType = ticketDto.Type.Trim();
-
-                if (normalizedType != "Airplane" && normalizedType != "Bus")
-                    throw new ValidationException("Тип квитка має бути Airplane або Bus.");
 
                 if (ticketDto.Id > 0)
                 {
@@ -134,7 +117,7 @@ namespace TravelAgency.BLL.Services
                         throw new NotFoundException("Квиток не знайдено.");
 
                     ticket.Price = ticketDto.Price;
-                    ticket.Type = normalizedType;
+                    ticket.Type = (DAL.Entities.Enums.TicketType)ticketDto.Type;
                     ticket.Date = dto.Date;
 
                     _unitOfWork.Tickets.Update(ticket);
@@ -144,7 +127,7 @@ namespace TravelAgency.BLL.Services
                     var newTicket = new Ticket
                     {
                         Price = ticketDto.Price,
-                        Type = normalizedType,
+                        Type = (DAL.Entities.Enums.TicketType)ticketDto.Type,
                         Date = dto.Date,
                         TourId = tour.Id
                     };
@@ -172,6 +155,7 @@ namespace TravelAgency.BLL.Services
 
             return _mapper.Map<TourDto>(tour);
         }
+
         public async Task DeleteAsync(int id)
         {
             var tour = await _unitOfWork.Tours.GetByIdAsync(id);
@@ -180,6 +164,7 @@ namespace TravelAgency.BLL.Services
                 throw new NotFoundException("Тур не знайдено.");
 
             var bookings = await _unitOfWork.Bookings.GetAllAsync();
+
             if (bookings.Any(b => b.TourId == id))
                 throw new ValidationException("Неможливо видалити тур, бо є активні бронювання.");
 
@@ -191,12 +176,14 @@ namespace TravelAgency.BLL.Services
         {
             var tours = await _unitOfWork.Tours.GetAllAsync();
             var tickets = await _unitOfWork.Tickets.GetAllAsync();
+
             foreach (var tour in tours)
             {
                 tour.Tickets = tickets
                     .Where(t => t.TourId == tour.Id)
                     .ToList();
             }
+
             return _mapper.Map<IEnumerable<TourDto>>(tours);
         }
 
@@ -215,6 +202,7 @@ namespace TravelAgency.BLL.Services
 
             return _mapper.Map<TourDto>(tour);
         }
+
         public async Task<IEnumerable<TourDto>> GetHotToursAsync()
         {
             var tours = await _unitOfWork.Tours.GetAllAsync();
@@ -234,6 +222,7 @@ namespace TravelAgency.BLL.Services
 
             return _mapper.Map<IEnumerable<TourDto>>(hotTours);
         }
+
         public async Task<IEnumerable<TourDto>> GetByTypeAsync(TourType type)
         {
             var tours = await _unitOfWork.Tours.GetAllAsync();
@@ -250,6 +239,7 @@ namespace TravelAgency.BLL.Services
 
             return _mapper.Map<IEnumerable<TourDto>>(filtered);
         }
+
         public async Task<IEnumerable<TourDto>> GetByCityAsync(string city)
         {
             var tours = await _unitOfWork.Tours.GetAllAsync();
