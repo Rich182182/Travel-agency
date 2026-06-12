@@ -1,56 +1,68 @@
-import { useState, useEffect } from 'react';
-import { FavoritesAPI } from '../api/client';
+import { useState, useEffect, useCallback } from 'react';
+import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 
 export function useFavorites() {
+  const { showToast } = useNotification();
   const { user } = useAuth();
-  const [favorites, setFavorites] = useState<string[]>([]);
 
+  // Функція для отримання гарантовано найсвіжіших даних з пам'яті браузера
+  const getLatestFavorites = (): string[] => {
+    const saved = localStorage.getItem('favorites');
+    return saved ? JSON.parse(saved) : [];
+  };
+
+  const [favorites, setFavorites] = useState<string[]>(getLatestFavorites());
+
+  // 1. Слухаємо оновлення. Коли хтось змінює улюблені, всі компоненти миттєво перечитують пам'ять
   useEffect(() => {
-    if (user) {
-      FavoritesAPI.getAll()
-        .then(response => {
-          // Бекенд може повертати масив об'єктів Tour або Favorite. Беремо id туру.
-          const ids = response.data.map((item: any) => 
-              (typeof item === 'object' ? (item.tourId || item.id) : item).toString()
-          );
-          setFavorites(ids);
-        })
-        .catch(err => console.error("Помилка завантаження улюблених", err));
-    } else {
+    const handleSync = () => {
+      setFavorites(getLatestFavorites());
+    };
+
+    window.addEventListener('favorites-updated', handleSync);
+    return () => window.removeEventListener('favorites-updated', handleSync);
+  }, []);
+
+  // 2. Очищення при виході з акаунту
+  // Якщо юзера немає, але в пам'яті ще висять тури - жорстко видаляємо їх
+  useEffect(() => {
+    if (!user && getLatestFavorites().length > 0) {
+      localStorage.removeItem('favorites');
       setFavorites([]);
+      window.dispatchEvent(new Event('favorites-updated'));
     }
   }, [user]);
 
-  const toggleFavorite = async (tourId: string) => {
+  const toggleFavorite = useCallback((tourId: string) => {
     if (!user) {
-      alert("Увійдіть в систему, щоб додавати тури в улюблені!");
+      showToast('Будь ласка, увійдіть в систему, щоб зберігати тури до улюблених.', 'error');
       return;
     }
 
-    const isFav = favorites.includes(tourId);
-
-    // Оптимістичне оновлення інтерфейсу (швидка реакція для юзера)
-    setFavorites(prev => 
-      isFav ? prev.filter(id => id !== tourId) : [...prev, tourId]
-    );
-
-    try {
-      if (isFav) {
-        await FavoritesAPI.remove(Number(tourId));
-      } else {
-        await FavoritesAPI.add(Number(tourId));
-      }
-    } catch (error) {
-      // Якщо на бекенді сталася помилка - відкочуємо зміни
-      setFavorites(prev => 
-        isFav ? [...prev, tourId] : prev.filter(id => id !== tourId)
-      );
-      console.error("Помилка збереження улюбленого", error);
+    // ЗАВЖДИ беремо свіжі дані з localStorage перед зміною, щоб уникнути конфліктів компонентів
+    const currentFavs = getLatestFavorites();
+    const isRemoving = currentFavs.includes(tourId);
+    
+    const newFavs = isRemoving 
+      ? currentFavs.filter(id => id !== tourId) 
+      : [...currentFavs, tourId];
+    
+    if (!isRemoving) {
+      showToast('Тур додано до улюблених! ❤️', 'success');
     }
-  };
 
-  const isFavorite = (tourId: string) => favorites.includes(tourId);
+    // Записуємо в пам'ять і повідомляємо всім компонентам на сторінці (наприклад, Navbar), що треба оновитися
+    localStorage.setItem('favorites', JSON.stringify(newFavs));
+    setFavorites(newFavs);
+    window.dispatchEvent(new Event('favorites-updated'));
+    
+  }, [user, showToast]);
+
+  // Якщо юзер не авторизований, сердечка завжди будуть "порожніми" (false)
+  const isFavorite = useCallback((tourId: string) => {
+     return user ? favorites.includes(tourId) : false;
+  }, [user, favorites]);
 
   return { favorites, toggleFavorite, isFavorite };
 }

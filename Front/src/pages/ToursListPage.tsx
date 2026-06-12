@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Heart, Loader, Calendar, Tag } from 'lucide-react';
+import { Heart, Loader, Calendar, Tag, MapPin } from 'lucide-react';
 import { ToursAPI } from '../api/client';
 import { useFavorites } from '../hooks/useFavorites';
 import type { Tour } from '../types';
@@ -42,7 +42,6 @@ export default function ToursListPage() {
     return matchesSearch && matchesType && matchesCity && matchesHot;
   });
 
-  // Функция для форматирования даты из ISO в читаемый вид
   const formatDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -73,55 +72,73 @@ export default function ToursListPage() {
           <option value="Excursion">Екскурсійні тури</option>
         </select>
 
-        <label className="flex items-center gap-2 cursor-pointer bg-red-50 px-4 py-2 rounded-lg border border-red-100">
+        <label className="flex items-center gap-2 cursor-pointer bg-red-50 px-4 py-2 rounded-lg border border-red-100 transition-colors hover:bg-red-100">
           <input type="checkbox" className="w-5 h-5 rounded text-red-600 cursor-pointer" checked={onlyHot} onChange={(e) => setOnlyHot(e.target.checked)} />
-          <span className="text-red-700 font-semibold">🔥 Тільки гарячі</span>
+          <span className="text-red-700 font-semibold tracking-wide">🔥 Тільки гарячі</span>
         </label>
       </div>
 
       {filteredTours.length === 0 ? (
-        <div className="text-center bg-white p-10 rounded-xl border text-gray-500">За вашим запитом турів не знайдено.</div>
+        <div className="text-center bg-white p-10 rounded-xl border text-gray-500 shadow-sm">За вашим запитом турів не знайдено.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTours.map(tour => {
             const favorited = isFavorite(tour.id.toString());
-            // Перевіряємо чи тур прострочений
             const isExpired = tour.date.split('T')[0] < todayStr;
 
             return (
-              <div key={tour.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-lg relative flex flex-col transition-all ${isExpired ? 'opacity-65' : ''}`}>
-                <button onClick={() => toggleFavorite(tour.id.toString())} className="absolute top-4 right-4 z-10 p-2 bg-white/80 rounded-full shadow-sm hover:bg-white transition-colors">
+              <div key={tour.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-lg relative flex flex-col transition-all ${isExpired ? 'opacity-65 grayscale-[30%]' : ''}`}>
+                
+                <button onClick={() => toggleFavorite(tour.id.toString())} className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform">
                   <Heart size={20} className={favorited ? "fill-red-500 text-red-500" : "text-gray-400"} />
                 </button>
-                <div className="p-5 flex flex-col h-full pt-12">
-                  <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-xl font-semibold text-gray-800">{tour.name}</h2>
-                    {tour.isHot && <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold ml-2 shrink-0">HOT</span>}
-                  </div>
-                  <p className="text-gray-500 text-sm mb-3">📍 {tour.city}</p>
+                
+                <div className="p-5 flex flex-col h-full pt-6">
                   
-                  {/* Додано тип та дату туру в менюшку (картку) */}
-                  <div className="space-y-1.5 mb-4 text-xs font-medium text-gray-600">
-                    <div className="flex items-center gap-1.5">
-                      <Tag size={14} className="text-blue-500" />
-                      <span>Тип: <span className="text-gray-800">{tour.type === 'Regular' ? 'Звичайний' : 'Екскурсійний'}</span></span>
+                  <div className="flex flex-wrap items-center gap-2 mb-3 pr-12">
+                    <h2 className="text-xl font-bold text-gray-800 leading-tight">{tour.name}</h2>
+                    {tour.isHot && <span className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-full font-bold tracking-wider uppercase shadow-sm">HOT</span>}
+                  </div>
+                  
+                  <div className="space-y-2 mb-6 text-sm font-medium text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={16} className="text-gray-400" />
+                      <span>{tour.city}</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Calendar size={14} className="text-blue-500" />
-                      <span>Дата: <span className="text-gray-800">{formatDate(tour.date)}</span></span>
+                    <div className="flex items-center gap-2">
+                      <Tag size={16} className="text-blue-500" />
+                      <span>{tour.type === 'Regular' ? 'Звичайний тур' : 'Екскурсійний тур'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar size={16} className="text-blue-500" />
+                      <span>{formatDate(tour.date)}</span>
                     </div>
                   </div>
 
                   <div className="mt-auto pt-4 border-t">
-                    <p className="text-2xl font-bold text-blue-600 mb-4">
-                      {tour.isHot && tour.promotion ? tour.price - tour.promotion : tour.price} ₴
-                    </p>
+                    {/* Вивід знижки у відсотках */}
+                    {tour.isHot && tour.promotion ? (
+                      <div className="mb-4">
+                         <span className="text-sm text-gray-400 line-through font-medium block">{tour.price} ₴</span>
+                         <div className="flex items-center gap-2 mt-0.5">
+                           <span className="text-2xl font-bold text-red-600">{tour.price - tour.promotion} ₴</span>
+                           <span className="text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-lg">
+                             Знижка {Math.round((tour.promotion / tour.price) * 100)}%
+                           </span>
+                         </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4">
+                        <p className="text-2xl font-bold text-blue-600">{tour.price} ₴</p>
+                      </div>
+                    )}
+
                     {isExpired ? (
                       <div className="block text-center w-full bg-gray-100 text-gray-500 font-bold py-2.5 rounded-lg border border-gray-200 cursor-not-allowed">
                         Тур завершено
                       </div>
                     ) : (
-                      <Link to={`/tour/${tour.id}`} className="block text-center w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+                      <Link to={`/tour/${tour.id}`} className="block text-center w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-600 hover:text-white transition-colors shadow-sm">
                         Детальніше
                       </Link>
                     )}
