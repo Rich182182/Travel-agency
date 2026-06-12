@@ -37,9 +37,17 @@ namespace TravelAgency.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddFavorite([FromBody] AddFavoriteRequest request)
         {
+            int validTourId = request.GetValidId();
+
+            if (validTourId == 0)
+            {
+                return BadRequest("Не вдалося знайти ID туру в запиті");
+            }
+
             int userId = GetCurrentUserId();
 
             var dto = _mapper.Map<AddFavoriteDto>(request);
+            dto.TourId = validTourId; // Примусово ставимо правильний ID
 
             await _favoriteService.AddToFavoritesAsync(userId, dto);
 
