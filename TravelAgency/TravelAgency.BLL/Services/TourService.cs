@@ -76,6 +76,18 @@ namespace TravelAgency.BLL.Services
             if (tour == null)
                 throw new NotFoundException("Тур не знайдено.");
 
+            var hasBookings = (await _unitOfWork.Bookings.GetAllAsync())
+                .Any(b => b.TourId == id);
+
+            if (hasBookings)
+            {
+                if (tour.Type != (DAL.Entities.Enums.TourType)dto.Type)
+                    throw new ValidationException("Неможливо змінити тип туру, бо є бронювання.");
+
+                if (!string.Equals(tour.City, dto.City, StringComparison.OrdinalIgnoreCase))
+                    throw new ValidationException("Неможливо змінити місто туру, бо є бронювання.");
+            }
+
             if (string.IsNullOrWhiteSpace(dto.Name))
                 throw new ValidationException("Назва туру не може бути пустою.");
 
@@ -124,15 +136,13 @@ namespace TravelAgency.BLL.Services
                 }
                 else
                 {
-                    var newTicket = new Ticket
+                    await _unitOfWork.Tickets.AddAsync(new Ticket
                     {
                         Price = ticketDto.Price,
                         Type = (DAL.Entities.Enums.TicketType)ticketDto.Type,
                         Date = dto.Date,
                         TourId = tour.Id
-                    };
-
-                    await _unitOfWork.Tickets.AddAsync(newTicket);
+                    });
                 }
             }
 
