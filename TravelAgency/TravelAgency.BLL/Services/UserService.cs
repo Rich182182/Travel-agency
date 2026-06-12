@@ -42,10 +42,5 @@ namespace TravelAgency.BLL.Services
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
         }
-<<<<<<< HEAD
-
-
-=======
->>>>>>> fe760dd0bc3fb1c006159978b22355db455ea1c4
     }
 }

@@ -10,11 +10,8 @@ using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.DAL.Entities;
 using TravelAgency.DAL.Interfaces;
-<<<<<<< HEAD
-=======
 using TravelAgency.DAL.Entities.Enums;
 using BCrypt.Net;
->>>>>>> fe760dd0bc3fb1c006159978b22355db455ea1c4
 
 namespace TravelAgency.BLL.Services
 {
