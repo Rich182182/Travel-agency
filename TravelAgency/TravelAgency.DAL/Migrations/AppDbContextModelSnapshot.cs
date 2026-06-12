@@ -33,9 +33,6 @@ namespace TravelAgency.DAL.Migrations
                     b.Property<int?>("RoomId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("RoomId1")
-                        .HasColumnType("int");
-
                     b.Property<int?>("TicketId")
                         .HasColumnType("int");
 
@@ -52,8 +49,6 @@ namespace TravelAgency.DAL.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.HasIndex("RoomId1");
-
                     b.HasIndex("TicketId");
 
                     b.HasIndex("TourId");
@@ -61,6 +56,24 @@ namespace TravelAgency.DAL.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("TravelAgency.DAL.Entities.FavoriteTour", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TourId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "TourId");
+
+                    b.HasIndex("TourId");
+
+                    b.ToTable("FavoriteTours");
                 });
 
             modelBuilder.Entity("TravelAgency.DAL.Entities.Hotel", b =>
@@ -73,11 +86,13 @@ namespace TravelAgency.DAL.Migrations
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -100,7 +115,8 @@ namespace TravelAgency.DAL.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -216,13 +232,9 @@ namespace TravelAgency.DAL.Migrations
             modelBuilder.Entity("TravelAgency.DAL.Entities.Booking", b =>
                 {
                     b.HasOne("TravelAgency.DAL.Entities.Room", "Room")
-                        .WithMany()
+                        .WithMany("Bookings")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("TravelAgency.DAL.Entities.Room", null)
-                        .WithMany("Bookings")
-                        .HasForeignKey("RoomId1");
 
                     b.HasOne("TravelAgency.DAL.Entities.Ticket", "Ticket")
                         .WithMany()
@@ -248,6 +260,25 @@ namespace TravelAgency.DAL.Migrations
                     b.Navigation("Ticket");
 
                     b.Navigation("Tour");
+                });
+
+            modelBuilder.Entity("TravelAgency.DAL.Entities.FavoriteTour", b =>
+                {
+                    b.HasOne("TravelAgency.DAL.Entities.Tour", "Tour")
+                        .WithMany()
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravelAgency.DAL.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tour");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TravelAgency.DAL.Entities.Room", b =>

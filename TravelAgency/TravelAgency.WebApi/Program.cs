@@ -6,21 +6,20 @@ using TravelAgency.BLL;
 using TravelAgency.WebApi.Extensions;
 using TravelAgency.WebApi.Mapping;
 using System.Text.Json.Serialization;
+using TravelAgency.WebApi.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. ДОДАЄМО СЕРВІС CORS ТУТ
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") 
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); 
+              .AllowCredentials();
     });
 });
-
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
 
@@ -77,6 +76,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddBusinessLogicLayer(connectionString);
@@ -85,9 +87,13 @@ builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<WebApiBookingProfile>();
     cfg.AddProfile<WebApiTourProfile>();
+    cfg.AddProfile<WebApiHotelProfile>();
+    cfg.AddProfile<WebApiRoomProfile>();
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
@@ -97,7 +103,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 2. ВМИКАЄМО CORS У ПАЙПЛАЙНІ САМЕ ТУТ (обов'язково перед Authentication!)
 app.UseCors("AllowReactApp");
 
 app.UseAuthentication();

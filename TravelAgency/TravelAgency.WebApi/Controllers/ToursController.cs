@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Enums;
+using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.WebApi.Models.Requests;
 
@@ -55,6 +56,7 @@ namespace TravelAgency.WebApi.Controllers
         {
             var dto = _mapper.Map<CreateTourDto>(request);
             var result = await _tourService.CreateAsync(dto);
+
             return Ok(result);
         }
 
@@ -64,6 +66,7 @@ namespace TravelAgency.WebApi.Controllers
         {
             var dto = _mapper.Map<UpdateTourDto>(request);
             var result = await _tourService.UpdateAsync(id, dto);
+
             return Ok(result);
         }
 
@@ -73,6 +76,13 @@ namespace TravelAgency.WebApi.Controllers
         {
             await _tourService.DeleteAsync(id);
             return Ok(new { message = "Тур видалено" });
+        }
+
+        [HttpGet("city/{city}")]
+        public async Task<IActionResult> GetByCity(string city)
+        {
+            var tours = await _tourService.GetByCityAsync(city);
+            return Ok(tours);
         }
     }
 }

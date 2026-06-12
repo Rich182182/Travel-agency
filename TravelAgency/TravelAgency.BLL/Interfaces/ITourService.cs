@@ -7,11 +7,10 @@ namespace TravelAgency.BLL.Interfaces
         Task<TourDto> CreateAsync(CreateTourDto dto);
         Task<TourDto> UpdateAsync(int id, UpdateTourDto dto);
         Task DeleteAsync(int id);
-
         Task<IEnumerable<TourDto>> GetAllAsync();
         Task<TourDto> GetByIdAsync(int id);
-
         Task<IEnumerable<TourDto>> GetHotToursAsync();
         Task<IEnumerable<TourDto>> GetByTypeAsync(TourType type);
+        Task<IEnumerable<TourDto>> GetByCityAsync(string city);
     }
 }

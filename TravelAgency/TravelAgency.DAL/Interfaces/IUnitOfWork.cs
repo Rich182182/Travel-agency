@@ -13,6 +13,7 @@ namespace TravelAgency.DAL.Interfaces
         IRepository<Room> Rooms { get; }
         IRepository<Tour> Tours { get; }
         IRepository<Ticket> Tickets { get; }
+        IRepository<FavoriteTour> FavoriteTours { get; }
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

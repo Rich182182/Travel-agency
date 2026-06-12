@@ -6,6 +6,7 @@ using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
+using TravelAgency.BLL.Services;
 using TravelAgency.WebApi.Models.Requests;
 using TravelAgency.WebApi.Models.Responses;
 
@@ -27,41 +28,38 @@ namespace TravelAgency.WebApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            try
-            {
-                var dto = _mapper.Map<RegisterUserDto>(request);
+            var dto = _mapper.Map<RegisterUserDto>(request);
 
-                await _authService.RegisterAsync(dto);
+            await _authService.RegisterAsync(dto);
 
-                return Ok(new { message = "Реєстрація пройшла успішно!" });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(new { message = "Реєстрація пройшла успішно!" });
+
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            try
+            var dto = _mapper.Map<LoginUserDto>(request);
+
+            var result = await _authService.LoginAsync(dto);
+
+
+            var response = new AuthResponse
             {
-                var dto = _mapper.Map<LoginUserDto>(request);
+                Token = result.Token,
+                Role = result.Role
+            };
 
-                var result = await _authService.LoginAsync(dto);
+            return Ok(response);
+        }
+        [Authorize]
+        [HttpDelete("me")]
+        public async Task<IActionResult> DeleteMe()
+        {
+            int userId = GetCurrentUserId();
 
+            await _authService.DeleteUserAsync(userId);
 
-                var response = new AuthResponse
-                {
-                    Token = result.Token,
-                    Role = result.Role
-                };
-
-                return Ok(response);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(new { message = "Ваш акаунт та всі ваші бронювання успішно видалено." });
         }
         [Authorize]
         [HttpGet("me")]
@@ -78,6 +76,15 @@ namespace TravelAgency.WebApi.Controllers
                 Email = userEmail,
                 Role = userRole
             });
+        }
+        private int GetCurrentUserId()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdString, out int userId))
+            {
+                return userId;
+            }
+            throw new ValidationException("Неможливо ідентифікувати користувача.");
         }
     }
 }

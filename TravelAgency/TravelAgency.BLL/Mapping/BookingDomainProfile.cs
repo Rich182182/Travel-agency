@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using TravelAgency.BLL.DTOs;
+using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.DAL.Entities;
 
@@ -19,6 +20,8 @@ namespace TravelAgency.BLL.Mapping
                 .ForMember(dest => dest.TotalPrice, opt => opt.Ignore());
 
             CreateMap<User, UserDto>();
+
+            CreateMap<AddFavoriteDto, FavoriteTour>();
         }
     }
 }

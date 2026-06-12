@@ -27,46 +27,26 @@ namespace TravelAgency.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request)
         {
-            try
-            {
-                var dto = _mapper.Map<CreateBookingDto>(request);
+            var dto = _mapper.Map<CreateBookingDto>(request);
 
-                int userId = GetCurrentUserId();
+            int userId = GetCurrentUserId();
 
-                var resultDto = await _bookingService.CreateBookingAsync(userId, dto);
+            var resultDto = await _bookingService.CreateBookingAsync(userId, dto);
 
-                var response = _mapper.Map<BookingResponse>(resultDto);
+            var response = _mapper.Map<BookingResponse>(resultDto);
 
-                return Ok(response);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(response);
+
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelBooking(int id)
         {
-            try
-            {
-                int userId = GetCurrentUserId(); 
+            int userId = GetCurrentUserId(); 
 
-                await _bookingService.DeleteBookingAsync(userId, id);
+            await _bookingService.DeleteBookingAsync(userId, id);
 
-                return Ok(new { message = "Бронювання успішно скасовано, номер звільнено." });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(new { message = "Бронювання успішно скасовано, номер звільнено." });
+
         }
 
         [Authorize] 
@@ -83,24 +63,14 @@ namespace TravelAgency.WebApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBooking(int id, [FromBody] UpdateBookingRequest request)
         {
-            try
-            {
-                int userId = GetCurrentUserId();
-                var dto = _mapper.Map<UpdateBookingDto>(request);
+            int userId = GetCurrentUserId();
+            var dto = _mapper.Map<UpdateBookingDto>(request);
 
-                var resultDto = await _bookingService.UpdateBookingAsync(userId, id, dto);
-                var response = _mapper.Map<BookingResponse>(resultDto);
+            var resultDto = await _bookingService.UpdateBookingAsync(userId, id, dto);
+            var response = _mapper.Map<BookingResponse>(resultDto);
 
-                return Ok(response);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(response);
+
         }
 
         private int GetCurrentUserId()
