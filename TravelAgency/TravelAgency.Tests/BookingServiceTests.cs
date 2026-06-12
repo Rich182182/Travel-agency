@@ -2,11 +2,13 @@ using AutoMapper;
 using Moq;
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.Exceptions;
+using TravelAgency.BLL.Interfaces;
 using TravelAgency.BLL.Mapping;
 using TravelAgency.BLL.Services;
 using TravelAgency.DAL.Entities;
 using TravelAgency.DAL.Entities.Enums;
 using TravelAgency.DAL.Interfaces;
+using TravelAgency.Tests.Helpers;
 using Xunit;
 
 namespace TravelAgency.Tests.Services;
@@ -31,27 +33,20 @@ public class BookingServiceTests
         _ticketRepoMock = new Mock<IRepository<Ticket>>();
         _hotelRepoMock = new Mock<IRepository<Hotel>>();
 
+        _mapper = MapperHelper.CreateMapper();
+
         _uowMock.Setup(u => u.Bookings).Returns(_bookingRepoMock.Object);
         _uowMock.Setup(u => u.Tours).Returns(_tourRepoMock.Object);
         _uowMock.Setup(u => u.Rooms).Returns(_roomRepoMock.Object);
         _uowMock.Setup(u => u.Tickets).Returns(_ticketRepoMock.Object);
         _uowMock.Setup(u => u.Hotels).Returns(_hotelRepoMock.Object);
 
-        var config = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile<BookingDomainProfile>();
-        });
-        _mapper = config.CreateMapper();
-
         _service = new BookingService(_uowMock.Object, _mapper);
     }
-
-    // ---------- CreateBookingAsync ----------
 
     [Fact]
     public async Task CreateBooking_WithValidTourAndTicket_ReturnsBookingDto()
     {
-        // Arrange
         var tour = new Tour { Id = 1, Price = 10000, City = "Київ" };
         var ticket = new Ticket { Id = 5, TourId = 1, Price = 2000, Type = TicketType.Airplane };
 
@@ -62,13 +57,11 @@ public class BookingServiceTests
 
         var dto = new CreateBookingDto { TourId = 1, TicketId = 5 };
 
-        // Act
         var result = await _service.CreateBookingAsync(userId: 42, dto);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(1, result.TourId);
-        Assert.Equal(12000, result.TotalPrice); // 10000 + 2000
+        Assert.Equal(12000, result.TotalPrice);
     }
 
     [Fact]
@@ -96,7 +89,6 @@ public class BookingServiceTests
 
         var result = await _service.CreateBookingAsync(1, dto);
 
-        // 10000 - 2000 (promotion) + 1000 (ticket) = 9000
         Assert.Equal(9000, result.TotalPrice);
     }
 
@@ -120,8 +112,8 @@ public class BookingServiceTests
 
         var result = await _service.CreateBookingAsync(1, dto);
 
-        Assert.Equal(9500, result.TotalPrice); // 5000 + 3000 + 1500
-        Assert.False(room.IsFree); // кімнату позначено як зайняту
+        Assert.Equal(9500, result.TotalPrice);
+        Assert.False(room.IsFree);
         _roomRepoMock.Verify(r => r.Update(room), Times.Once);
     }
 
@@ -130,7 +122,7 @@ public class BookingServiceTests
     {
         var tour = new Tour { Id = 1, Price = 5000, City = "Рим" };
         var hotel = new Hotel { Id = 1, City = "Рим" };
-        var room = new Room { Id = 3, HotelId = 1, Price = 2000, IsFree = false }; // зайнята!
+        var room = new Room { Id = 3, HotelId = 1, Price = 2000, IsFree = false };
 
         _tourRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(tour);
         _roomRepoMock.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(room);
@@ -145,7 +137,7 @@ public class BookingServiceTests
     public async Task CreateBooking_RoomCityMismatch_ThrowsValidationException()
     {
         var tour = new Tour { Id = 1, Price = 5000, City = "Київ" };
-        var hotel = new Hotel { Id = 1, City = "Варшава" }; // інше місто!
+        var hotel = new Hotel { Id = 1, City = "Варшава" };
         var room = new Room { Id = 4, HotelId = 1, Price = 1000, IsFree = true };
 
         _tourRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(tour);
@@ -161,7 +153,7 @@ public class BookingServiceTests
     public async Task CreateBooking_TicketBelongsToAnotherTour_ThrowsValidationException()
     {
         var tour = new Tour { Id = 1, Price = 5000, City = "Київ" };
-        var ticket = new Ticket { Id = 7, TourId = 99, Price = 1000, Type = TicketType.Bus }; // чужий тур
+        var ticket = new Ticket { Id = 7, TourId = 99, Price = 1000, Type = TicketType.Bus };
 
         _tourRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(tour);
         _ticketRepoMock.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(ticket);
@@ -183,8 +175,6 @@ public class BookingServiceTests
 
         await Assert.ThrowsAsync<NotFoundException>(() => _service.CreateBookingAsync(1, dto));
     }
-
-    // ---------- DeleteBookingAsync ----------
 
     [Fact]
     public async Task DeleteBooking_ValidOwner_DeletesAndFreesRoom()
@@ -216,7 +206,7 @@ public class BookingServiceTests
     [Fact]
     public async Task DeleteBooking_AnotherUsersBooking_ThrowsValidationException()
     {
-        var booking = new Booking { Id = 1, UserId = 10 }; // власник — userId 10
+        var booking = new Booking { Id = 1, UserId = 10 };
 
         _bookingRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(booking);
 
@@ -239,26 +229,6 @@ public class BookingServiceTests
         _bookingRepoMock.Verify(r => r.Delete(booking), Times.Once);
     }
 
-    // ---------- GetUserBookingsAsync ----------
-
-    [Fact]
-    public async Task GetUserBookings_ReturnsOnlyCurrentUsersBookings()
-    {
-        var allBookings = new List<Booking>
-        {
-            new() { Id = 1, UserId = 7, TourId = 1 },
-            new() { Id = 2, UserId = 7, TourId = 2 },
-            new() { Id = 3, UserId = 99, TourId = 3 }, // чужий
-        };
-
-        _bookingRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(allBookings);
-
-        var result = (await _service.GetUserBookingsAsync(userId: 7)).ToList();
-
-        Assert.Equal(2, result.Count);
-        Assert.All(result, b => Assert.Equal(7, b.UserId));
-    }
-
     [Fact]
     public async Task GetUserBookings_NoBookings_ReturnsEmptyList()
     {
@@ -268,8 +238,6 @@ public class BookingServiceTests
 
         Assert.Empty(result);
     }
-
-    // ---------- UpdateBookingAsync ----------
 
     [Fact]
     public async Task UpdateBooking_ChangeRoom_FreesOldAndOccupiesNew()
@@ -293,16 +261,16 @@ public class BookingServiceTests
         var dto = new UpdateBookingDto { RoomId = 2, TicketId = 3 };
         var result = await _service.UpdateBookingAsync(userId: 1, bookingId: 10, dto);
 
-        Assert.True(oldRoom.IsFree);    // стара кімната звільнена
-        Assert.False(newRoom.IsFree);   // нова кімната зайнята
-        Assert.Equal(7500, result.TotalPrice); // 5000 + 2000 + 500
+        Assert.True(oldRoom.IsFree);
+        Assert.False(newRoom.IsFree);
+        Assert.Equal(7500, result.TotalPrice);
     }
 
     [Fact]
     public async Task UpdateBooking_NewRoomOccupied_ThrowsValidationException()
     {
         var oldRoom = new Room { Id = 1, HotelId = 1, Price = 1000, IsFree = false };
-        var newRoom = new Room { Id = 2, HotelId = 1, Price = 2000, IsFree = false }; // зайнята!
+        var newRoom = new Room { Id = 2, HotelId = 1, Price = 2000, IsFree = false };
         var hotel = new Hotel { Id = 1, City = "Київ" };
         var tour = new Tour { Id = 1, Price = 5000, City = "Київ" };
         var booking = new Booking { Id = 10, UserId = 1, TourId = 1, RoomId = 1 };

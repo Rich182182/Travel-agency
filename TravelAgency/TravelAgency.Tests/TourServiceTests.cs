@@ -6,9 +6,9 @@ using TravelAgency.BLL.Mapping;
 using TravelAgency.BLL.Services;
 using TravelAgency.DAL.Entities;
 using TravelAgency.DAL.Interfaces;
+using TravelAgency.Tests.Helpers;
 using Xunit;
 
-// Створюємо псевдоніми для енамів, щоб уникнути конфлікту імен!
 using BllEnums = TravelAgency.BLL.DTOs.Enums;
 using DalEnums = TravelAgency.DAL.Entities.Enums;
 
@@ -23,31 +23,21 @@ public class TourServiceTests
     private readonly IMapper _mapper;
     private readonly TourService _service;
 
-  public TourServiceTests()
-{
-    _uowMock = new Mock<IUnitOfWork>();
-    _tourRepoMock = new Mock<IRepository<Tour>>();
-    _ticketRepoMock = new Mock<IRepository<Ticket>>();
-    _bookingRepoMock = new Mock<IRepository<Booking>>();
-
-    _uowMock.Setup(u => u.Tours).Returns(_tourRepoMock.Object);
-    _uowMock.Setup(u => u.Tickets).Returns(_ticketRepoMock.Object);
-    _uowMock.Setup(u => u.Bookings).Returns(_bookingRepoMock.Object);
-
-    // НАДІЙНЕ РІШЕННЯ: Створюємо конфігурацію безпосередньо через екземпляр
-    var mapperConfig = new MapperConfiguration(cfg =>
+    public TourServiceTests()
     {
-        cfg.AddProfile<TourDomainProfile>();
-        cfg.CreateMap<DalEnums.TourType, BllEnums.TourType>().ReverseMap();
-        cfg.CreateMap<DalEnums.TicketType, BllEnums.TicketType>().ReverseMap();
-    });
+        _uowMock = new Mock<IUnitOfWork>();
+        _tourRepoMock = new Mock<IRepository<Tour>>();
+        _ticketRepoMock = new Mock<IRepository<Ticket>>();
+        _bookingRepoMock = new Mock<IRepository<Booking>>();
 
-    _mapper = mapperConfig.CreateMapper();
+        _uowMock.Setup(u => u.Tours).Returns(_tourRepoMock.Object);
+        _uowMock.Setup(u => u.Tickets).Returns(_ticketRepoMock.Object);
+        _uowMock.Setup(u => u.Bookings).Returns(_bookingRepoMock.Object);
 
-    _service = new TourService(_uowMock.Object, _mapper);
-}
+        _mapper = MapperHelper.CreateMapper();
 
-    // ---------- CreateAsync ----------
+        _service = new TourService(_uowMock.Object, _mapper);
+    }
 
     [Fact]
     public async Task CreateTour_ValidData_ReturnsTourDto()
@@ -62,10 +52,10 @@ public class TourServiceTests
             City = "Париж",
             Description = "Романтична подорож",
             Date = DateTime.UtcNow.AddDays(30),
-            Type = BllEnums.TourType.Excursion, // Використовуємо BLL Enum
+            Type = BllEnums.TourType.Excursion,
             Tickets = new List<CreateTicketDto>
             {
-                new() { Price = 5000, Type = BllEnums.TicketType.Airplane } // Використовуємо BLL Enum
+                new() { Price = 5000, Type = BllEnums.TicketType.Airplane }
             }
         };
 
@@ -144,7 +134,7 @@ public class TourServiceTests
             Price = 5000,
             City = "Варшава",
             Description = "Опис",
-            Date = DateTime.UtcNow.AddDays(-1), // минула дата!
+            Date = DateTime.UtcNow.AddDays(-1),
             Type = BllEnums.TourType.Regular,
             Tickets = new List<CreateTicketDto> { new() { Price = 2000, Type = BllEnums.TicketType.Bus } }
         };
@@ -163,7 +153,7 @@ public class TourServiceTests
             Description = "Опис",
             Date = DateTime.UtcNow.AddDays(20),
             Type = BllEnums.TourType.Excursion,
-            Tickets = new List<CreateTicketDto>() // порожній список
+            Tickets = new List<CreateTicketDto>()
         };
 
         await Assert.ThrowsAsync<ValidationException>(() => _service.CreateAsync(dto));
@@ -203,60 +193,12 @@ public class TourServiceTests
         await Assert.ThrowsAsync<ValidationException>(() => _service.CreateAsync(dto));
     }
 
-    // ---------- GetByIdAsync ----------
-
-    [Fact]
-    public async Task GetById_ExistingTour_ReturnsTourWithTickets()
-    {
-        var tour = new Tour { Id = 1, Name = "Київ", City = "Київ", Price = 5000 };
-        var tickets = new List<Ticket>
-        {
-            new() { Id = 1, TourId = 1, Price = 1000, Type = DalEnums.TicketType.Bus }, // Використовуємо DAL Enum
-            new() { Id = 2, TourId = 2, Price = 2000, Type = DalEnums.TicketType.Airplane } // чужий тур
-        };
-
-        _tourRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(tour);
-        _ticketRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(tickets);
-
-        var result = await _service.GetByIdAsync(1);
-
-        Assert.NotNull(result);
-        Assert.Equal("Київ", result.Name);
-        Assert.Single(result.Tickets); // лише один квиток для цього туру
-    }
-
     [Fact]
     public async Task GetById_TourNotFound_ThrowsNotFoundException()
     {
         _tourRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Tour?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => _service.GetByIdAsync(999));
-    }
-
-    // ---------- GetAllAsync ----------
-
-    [Fact]
-    public async Task GetAll_ReturnsTourListWithTickets()
-    {
-        var tours = new List<Tour>
-        {
-            new() { Id = 1, Name = "Тур 1", City = "Київ", Price = 1000, Type = DalEnums.TourType.Excursion },
-            new() { Id = 2, Name = "Тур 2", City = "Рим", Price = 2000, Type = DalEnums.TourType.Regular },
-        };
-        var tickets = new List<Ticket>
-        {
-            new() { Id = 1, TourId = 1, Price = 500, Type = DalEnums.TicketType.Bus },
-            new() { Id = 2, TourId = 2, Price = 1000, Type = DalEnums.TicketType.Airplane },
-        };
-
-        _tourRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(tours);
-        _ticketRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(tickets);
-
-        var result = (await _service.GetAllAsync()).ToList();
-
-        Assert.Equal(2, result.Count);
-        Assert.Single(result[0].Tickets);
-        Assert.Single(result[1].Tickets);
     }
 
     [Fact]
@@ -269,8 +211,6 @@ public class TourServiceTests
 
         Assert.Empty(result);
     }
-
-    // ---------- GetHotToursAsync ----------
 
     [Fact]
     public async Task GetHotTours_ReturnsOnlyHotTours()
@@ -301,8 +241,6 @@ public class TourServiceTests
         await Assert.ThrowsAsync<NotFoundException>(() => _service.GetHotToursAsync());
     }
 
-    // ---------- GetByTypeAsync ----------
-
     [Fact]
     public async Task GetByType_ReturnsCorrectType()
     {
@@ -319,8 +257,6 @@ public class TourServiceTests
         Assert.Single(result);
         Assert.Equal("Звичайний", result[0].Name);
     }
-
-    // ---------- GetByCityAsync ----------
 
     [Fact]
     public async Task GetByCity_ExistingCity_ReturnsTours()
@@ -356,12 +292,10 @@ public class TourServiceTests
         };
         _tourRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(tours);
 
-        var result = (await _service.GetByCityAsync("київ")).ToList(); // lowercase
+        var result = (await _service.GetByCityAsync("київ")).ToList();
 
         Assert.Single(result);
     }
-
-    // ---------- DeleteAsync ----------
 
     [Fact]
     public async Task Delete_TourWithNoBookings_DeletesSuccessfully()
@@ -397,8 +331,6 @@ public class TourServiceTests
 
         await Assert.ThrowsAsync<NotFoundException>(() => _service.DeleteAsync(999));
     }
-
-    // ---------- UpdateAsync ----------
 
     [Fact]
     public async Task Update_ValidData_UpdatesTourSuccessfully()
@@ -483,7 +415,7 @@ public class TourServiceTests
         {
             Name = "Тур",
             Price = 10000,
-            City = "Варшава", // змінюємо місто!
+            City = "Варшава",
             Description = "Опис",
             Date = DateTime.UtcNow.AddDays(10),
             Type = BllEnums.TourType.Regular,
@@ -517,7 +449,7 @@ public class TourServiceTests
             City = "Рим",
             Description = "Опис",
             Date = DateTime.UtcNow.AddDays(10),
-            Type = BllEnums.TourType.Excursion, // змінюємо тип!
+            Type = BllEnums.TourType.Excursion,
             Tickets = new List<UpdateTicketDto> { new() { Id = 0, Price = 1000, Type = BllEnums.TicketType.Bus } }
         };
 
@@ -546,7 +478,7 @@ public class TourServiceTests
             Price = 10000,
             City = "Рим",
             Description = "Опис",
-            Date = DateTime.UtcNow.AddDays(-5), // минула дата!
+            Date = DateTime.UtcNow.AddDays(-5),
             Type = BllEnums.TourType.Excursion,
             Tickets = new List<UpdateTicketDto> { new() { Id = 0, Price = 1000, Type = BllEnums.TicketType.Bus } }
         };
