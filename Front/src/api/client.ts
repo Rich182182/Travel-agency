@@ -1,70 +1,81 @@
 import axios from 'axios';
-import type { Tour, Hotel, Room, Booking, User, Ticket } from '../types';
 
-// порт бекенду
-const API_URL = 'http://localhost:5160'; 
-
-export const api = axios.create({
-  baseURL: API_URL,
+const api = axios.create({
+  baseURL: 'http://localhost:5160', 
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export const AuthAPI = {
-  login: (data: any) => api.post('/api/Auth/login', data),
   register: (data: any) => api.post('/api/Auth/register', data),
-  getMe: () => api.get<User>('/api/Auth/me'),
-  deleteMe: () => api.delete('/api/Auth/me') // НОВИЙ ЕНДПОІНТ
+  login: (data: any) => api.post('/api/Auth/login', data),
+  getMe: () => api.get('/api/Auth/me'),
+  deleteMe: () => api.delete('/api/Auth/me'),
 };
 
 export const ToursAPI = {
-  getAll: () => api.get<Tour[]>('/api/Tours'),
-  getHot: () => api.get<Tour[]>('/api/Tours/hot'),
-  getById: (id: number) => api.get<Tour>(`/api/Tours/${id}`),
-  create: (data: Partial<Tour>) => api.post('/api/Tours', data),
-  update: (id: number, data: Partial<Tour>) => api.put(`/api/Tours/${id}`, data),
-  delete: (id: number) => api.delete(`/api/Tours/${id}`)
-};
-
-export const HotelsAPI = {
-  getAll: () => api.get<Hotel[]>('/api/Hotels'),
-  getById: (id: number) => api.get<Hotel>(`/api/Hotels/${id}`),
-  create: (data: { name: string; city: string }) => api.post('/api/Hotels', data),
-  update: (id: number, data: { name: string; city: string }) => api.put(`/api/Hotels/${id}`, data),
-  delete: (id: number) => api.delete(`/api/Hotels/${id}`)
-};
-
-export const RoomsAPI = {
-  getByHotel: (hotelId: number) => api.get<Room[]>(`/api/Rooms/hotel/${hotelId}`),
-  create: (hotelId: number, data: { name: string; price: number }) => api.post(`/api/Rooms/${hotelId}`, data),
-  update: (id: number, data: Room) => api.put(`/api/Rooms/${id}`, data),
-  delete: (id: number) => api.delete(`/api/Rooms/${id}`)
+  getAll: () => api.get('/api/Tours'),
+  getById: (id: number) => api.get(`/api/Tours/${id}`),
+  create: (data: any) => api.post('/api/Tours', data),
+  update: (id: number, data: any) => api.put(`/api/Tours/${id}`, data),
+  delete: (id: number) => api.delete(`/api/Tours/${id}`),
+  getHot: () => api.get('/api/Tours/hot'),
+  getByType: (type: string) => api.get(`/api/Tours/type/${type}`),
+  getByCity: (city: string) => api.get(`/api/Tours/city/${city}`),
 };
 
 export const BookingsAPI = {
-  getMyBookings: () => api.get<Booking[]>('/api/Bookings/my'),
-  create: (data: { tourId: number; roomId?: number; ticketId?: number }) => api.post('/api/Bookings', data),
-  update: (id: number, data: { roomId?: number; ticketId?: number }) => api.put(`/api/Bookings/${id}`, data),
-  delete: (id: number) => api.delete(`/api/Bookings/${id}`)
+  create: (data: any) => api.post('/api/Bookings', data),
+  update: (id: number, data: any) => api.put(`/api/Bookings/${id}`, data),
+  delete: (id: number) => api.delete(`/api/Bookings/${id}`),
+  getMyBookings: () => api.get('/api/Bookings/my'),
+};
+
+export const FavoritesAPI = {
+  getAll: () => api.get('/api/Favorites'),
+  add: (data: { tourId: number }) => api.post('/api/Favorites', data),
+  delete: (tourId: number) => api.delete(`/api/Favorites/${tourId}`),
+};
+
+export const HotelsAPI = {
+  getAll: () => api.get('/api/Hotels'),
+  getById: (id: number) => api.get(`/api/Hotels/${id}`),
+  create: (data: any) => api.post('/api/Hotels', data),
+  update: (id: number, data: any) => api.put(`/api/Hotels/${id}`, data),
+  delete: (id: number) => api.delete(`/api/Hotels/${id}`),
+};
+
+export const RoomsAPI = {
+  getById: (id: number) => api.get(`/api/Rooms/${id}`),
+  getByHotel: (hotelId: number) => api.get(`/api/Rooms/hotel/${hotelId}`),
+  
+  create: (hotelId: number, data: { roomType: string; price: number }) => 
+    api.post(`/api/Rooms/${hotelId}`, data),
+  
+  update: (id: number, data: { id: number; roomType: string; price: number; isFree: boolean }) => 
+    api.put(`/api/Rooms/${id}`, data),
+    
+  delete: (id: number) => api.delete(`/api/Rooms/${id}`),
 };
 
 export const UsersAPI = {
-  getAll: () => api.get<User[]>('/api/Users'),
-  changeRole: (id: number, newRole: string) => api.patch(`/api/Users/${id}/role`, { newRole })
+  getAll: () => api.get('/api/Users'),
+  changeRole: (id: number, newRole: string) => 
+    api.patch(`/api/Users/${id}/role`, { newRole }),
 };
 
-// НОВИЙ КОНТРОЛЕР ДЛЯ УЛЮБЛЕНИХ
-export const FavoritesAPI = {
-  getAll: () => api.get('/api/Favorites'),
-  add: (tourId: number) => api.post('/api/Favorites', { tourId }),
-  remove: (tourId: number) => api.delete(`/api/Favorites/${tourId}`)
-};
+export default api;

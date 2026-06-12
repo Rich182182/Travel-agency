@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ToursAPI, HotelsAPI, BookingsAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
+import { parseBackendError } from '../api/errorHandler';
 import { AlertCircle, Loader, Calendar, Tag, MapPin } from 'lucide-react';
 import type { Tour, Ticket, Hotel, Room } from '../types';
 
@@ -9,12 +11,12 @@ export default function TourDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useNotification(); 
   
   const [tour, setTour] = useState<Tour | null>(null);
   const [availableHotels, setAvailableHotels] = useState<Hotel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Зберігаємо цілі об'єкти
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -27,9 +29,9 @@ export default function TourDetailsPage() {
           HotelsAPI.getAll()
         ]);
         setTour(tourRes.data);
-        setAvailableHotels(hotelsRes.data.filter(h => h.city === tourRes.data.city));
+        setAvailableHotels(hotelsRes.data.filter((h: Hotel) => h.city === tourRes.data.city));
       } catch (error) {
-        console.error("Помилка завантаження даних туру", error);
+        showToast(parseBackendError(error), 'error');
       } finally {
         setIsLoading(false);
       }
@@ -38,7 +40,7 @@ export default function TourDetailsPage() {
   }, [id]);
 
   if (isLoading) return <div className="flex justify-center mt-20"><Loader className="animate-spin text-blue-600" size={48} /></div>;
-  if (!tour) return <div className="text-center mt-20 text-xl font-bold">Тур не знайдено</div>;
+  if (!tour) return <div className="text-center mt-20 text-xl font-bold text-gray-600">Тур не знайдено</div>;
 
   const isRegular = tour.type === 'Regular';
   const hasAvailableRooms = availableHotels.some(hotel => hotel.rooms && hotel.rooms.some(room => room.isFree));
@@ -57,11 +59,21 @@ export default function TourDetailsPage() {
   };
 
   const handleBooking = async () => {
-    if (isExpired) return alert('Цей тур вже завершився!');
-    if (!user) { alert('Спочатку увійдіть в акаунт!'); navigate('/login'); return; }
-    if (!selectedTicket) return alert('Будь ласка, оберіть квиток!');
+    if (isExpired) {
+      showToast('Цей тур вже завершився!', 'error');
+      return;
+    }
+    if (!user) { 
+      showToast('Спочатку увійдіть в акаунт!', 'error'); 
+      navigate('/login'); 
+      return; 
+    }
+    if (!selectedTicket) {
+      showToast('Будь ласка, оберіть квиток!', 'error');
+      return;
+    }
     if (isRegular && (!selectedHotel || !selectedRoom)) {
-      alert('Для звичайного туру необхідно обрати готель та вільний номер!');
+      showToast('Для звичайного туру необхідно обрати готель та вільний номер!', 'error');
       return;
     }
 
@@ -71,17 +83,26 @@ export default function TourDetailsPage() {
         ticketId: selectedTicket.id,
         roomId: selectedRoom?.id
       });
-      alert('Успішно заброньовано!');
+      showToast('Успішно заброньовано! 🎉', 'success');
       navigate('/bookings');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Помилка при бронюванні');
+      showToast(parseBackendError(error), 'error');
     }
   };
 
-  const translateTicket = (typeStr: string) => {
+  const translateTicket = (typeStr?: string) => {
     if (typeStr === 'Airplane') return 'Авіа (Літак)';
     if (typeStr === 'Bus') return 'Автобус';
-    return typeStr;
+    if (typeStr === 'Train') return 'Потяг';
+    if (typeStr === 'Ship') return 'Корабель / Паром';
+    return typeStr || 'Невідомо';
+  };
+
+  const translateRoomType = (typeStr?: string) => {
+    if (typeStr === 'Standart') return 'Стандарт';
+    if (typeStr === 'Lux') return 'Люкс';
+    if (typeStr === 'Deluxe') return 'Делюкс';
+    return typeStr || 'Невідомо';
   };
 
   const formatDate = (dateStr: string) => {
@@ -95,12 +116,12 @@ export default function TourDetailsPage() {
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8 flex flex-col md:flex-row gap-8">
       <div className="md:w-2/3 space-y-6">
-        <button onClick={() => navigate('/')} className="text-gray-500 hover:text-blue-600 font-medium">← Назад</button>
+        <button onClick={() => navigate('/')} className="text-gray-500 hover:text-blue-600 font-medium transition-colors">← Назад</button>
         
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-gray-800">{tour.name}</h1>
-            {tour.isHot && <span className="bg-red-500 text-white text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">HOT</span>}
+            {tour.isHot && <span className="bg-red-500 text-white text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm">HOT</span>}
           </div>
           
           <div className="flex flex-wrap items-center gap-5 mt-4 text-sm font-medium text-gray-600">
@@ -174,7 +195,7 @@ export default function TourDetailsPage() {
             <h3 className="font-semibold text-gray-700 mb-3">Оберіть готель: <span className="text-red-500">*</span></h3>
             <select className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500" 
               onChange={(e) => {
-                const hotel = availableHotels.find(h => h.id === Number(e.target.value)) || null;
+                const hotel = availableHotels.find((h: Hotel) => h.id === Number(e.target.value)) || null;
                 setSelectedHotel(hotel);
                 setSelectedRoom(null);
               }} 
@@ -182,7 +203,7 @@ export default function TourDetailsPage() {
               disabled={isExpired}
             >
               <option value="" disabled>-- Оберіть готель --</option>
-              {availableHotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+              {availableHotels.map((h: Hotel) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
 
             {selectedHotel && selectedHotel.rooms && (
@@ -199,7 +220,7 @@ export default function TourDetailsPage() {
                         onChange={() => !isExpired && room.isFree && setSelectedRoom(room)} 
                         disabled={!room.isFree || isExpired} 
                       />
-                      {room.name} {!room.isFree && '(Зайнято)'}
+                      {translateRoomType(room.roomType)} {!room.isFree && '(Зайнято)'}
                     </div>
                     <span className="font-medium">+{room.price} ₴</span>
                   </label>
