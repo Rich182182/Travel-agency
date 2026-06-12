@@ -1,8 +1,10 @@
-﻿namespace TravelAgency.BLL.DTOs.Users
+﻿using TravelAgency.DAL.Entities.Enums;
+
+namespace TravelAgency.BLL.DTOs.Users
 {
     public class AuthResponseDto
     {
         public string Token { get; set; }
-        public string Role { get; set; }
+        public Role Role { get; set; }
     }
 }

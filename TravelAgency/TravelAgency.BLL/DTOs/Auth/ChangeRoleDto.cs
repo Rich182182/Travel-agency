@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TravelAgency.DAL.Entities.Enums;
 
 namespace TravelAgency.BLL.DTOs
 {
     public class ChangeRoleDto
     {
-        public string NewRole { get; set; }
+        public Role NewRole { get; set; }
     }
 }
