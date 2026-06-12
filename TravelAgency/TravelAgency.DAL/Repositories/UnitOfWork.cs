@@ -16,6 +16,7 @@ namespace TravelAgency.DAL.Repositories
         public IRepository<Room> Rooms { get; }
         public IRepository<Tour> Tours { get; }
         public IRepository<Ticket> Tickets { get; }
+        public IRepository<FavoriteTour> FavoriteTours { get; }
 
         public UnitOfWork(
             AppDbContext context,
