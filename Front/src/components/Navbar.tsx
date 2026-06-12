@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Map, Search, LogOut, LogIn, Settings, Briefcase, User as UserIcon, Heart, UserPlus } from 'lucide-react';
+import { Map, Search, LogOut, LogIn, Settings, Briefcase, User as UserIcon, Heart, UserPlus, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
+import { AuthAPI } from '../api/client';
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -10,11 +11,28 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { favorites } = useFavorites();
   const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
+  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchValue.trim()) navigate(`/?search=${encodeURIComponent(searchValue)}`);
     else navigate('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Ви впевнені, що хочете назавжди видалити свій акаунт? Цю дію неможливо скасувати!')) {
+      return;
+    }
+    
+    try {
+      await AuthAPI.deleteMe();
+      logout();
+      navigate('/');
+      alert('Ваш акаунт було успішно видалено.');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Помилка при видаленні акаунта.');
+    }
   };
 
   return (
@@ -25,21 +43,21 @@ export default function Navbar() {
           <Map size={28} /><span>Турагенція</span>
         </Link>
 
-        <form onSubmit={handleSearch} className="w-full md:w-1/3 flex relative text-gray-800">
+        {/* ОНОВЛЕНИЙ ДИЗАЙН ПОШУКУ */}
+        <form onSubmit={handleSearch} className="w-full md:w-1/3 flex relative text-gray-800 group">
           <input
             type="text" placeholder="Куди хочете поїхати?"
-            className="w-full p-2 pl-4 pr-10 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="w-full py-2 pl-5 pr-12 rounded-full bg-white/95 border-2 border-transparent focus:bg-white focus:outline-none focus:border-blue-200 shadow-sm transition-all"
             value={searchValue} onChange={(e) => setSearchValue(e.target.value)}
           />
-          <button type="submit" className="absolute right-2 top-1.5 p-1 text-blue-600 hover:text-blue-800">
-            <Search size={20} />
+          <button type="submit" className="absolute right-1.5 top-1 bottom-1 px-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center">
+            <Search size={16} strokeWidth={3} />
           </button>
         </form>
 
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              {/* Доступно всім зареєстрованим */}
               <Link to="/favorites" className="relative flex items-center gap-1 hover:text-blue-200 transition-colors">
                 <Heart size={20} /><span className="hidden md:inline">Улюблені</span>
                 {favorites.length > 0 && (
@@ -53,16 +71,33 @@ export default function Navbar() {
                 <Briefcase size={18} /> Бронювання
               </Link>
 
-              {/* Доступно тільки персоналу */}
               {(user.role === 'Admin' || user.role === 'Manager') && (
                 <Link to="/admin" className="flex items-center gap-1 hover:text-blue-200">
                   <Settings size={18} /> Панель
                 </Link>
               )}
 
-              <div className="flex items-center gap-2 ml-4 pl-4 border-l border-blue-400">
-                <UserIcon size={18} /><span className="text-sm font-medium">{user.email.split('@')[0]}</span>
-                <button onClick={logout} className="ml-2 text-blue-200 hover:text-white" title="Вийти"><LogOut size={20} /></button>
+              {/* ВИПАДАЮЧЕ МЕНЮ ЮЗЕРА */}
+              <div 
+                className="relative ml-4 pl-4 border-l border-blue-400"
+                onMouseEnter={() => setIsMenuOpen(true)} 
+                onMouseLeave={() => setIsMenuOpen(false)}
+              >
+                <div className="flex items-center gap-2 cursor-pointer py-1">
+                  <UserIcon size={18} />
+                  <span className="text-sm font-medium">{user.email.split('@')[0]}</span>
+                </div>
+                
+                {isMenuOpen && (
+                  <div className="absolute right-0 top-full mt-0 w-48 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden text-gray-800 flex flex-col py-1">
+                    <button onClick={logout} className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 transition-colors">
+                      <LogOut size={16} className="text-gray-500" /> Вийти
+                    </button>
+                    <button onClick={handleDeleteAccount} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100 transition-colors">
+                      <Trash2 size={16} /> Видалити акаунт
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           ) : (

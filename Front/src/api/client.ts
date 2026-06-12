@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Tour, Hotel, Room, Booking, User, Ticket } from '../types';
 
-// Зміни порт на той, на якому крутиться твій Docker (зазвичай 5000, 5001 або 8080)
+// порт бекенду
 const API_URL = 'http://localhost:5160'; 
 
 export const api = axios.create({
@@ -22,7 +22,8 @@ api.interceptors.request.use(config => {
 export const AuthAPI = {
   login: (data: any) => api.post('/api/Auth/login', data),
   register: (data: any) => api.post('/api/Auth/register', data),
-  getMe: () => api.get<User>('/api/Auth/me')
+  getMe: () => api.get<User>('/api/Auth/me'),
+  deleteMe: () => api.delete('/api/Auth/me') // НОВИЙ ЕНДПОІНТ
 };
 
 export const ToursAPI = {
@@ -59,4 +60,11 @@ export const BookingsAPI = {
 export const UsersAPI = {
   getAll: () => api.get<User[]>('/api/Users'),
   changeRole: (id: number, newRole: string) => api.patch(`/api/Users/${id}/role`, { newRole })
+};
+
+// НОВИЙ КОНТРОЛЕР ДЛЯ УЛЮБЛЕНИХ
+export const FavoritesAPI = {
+  getAll: () => api.get('/api/Favorites'),
+  add: (tourId: number) => api.post('/api/Favorites', { tourId }),
+  remove: (tourId: number) => api.delete(`/api/Favorites/${tourId}`)
 };

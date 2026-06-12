@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Heart, Loader } from 'lucide-react';
+import { Heart, Loader, Calendar, Tag } from 'lucide-react';
 import { ToursAPI } from '../api/client';
 import { useFavorites } from '../hooks/useFavorites';
 import type { Tour } from '../types';
@@ -42,9 +42,20 @@ export default function ToursListPage() {
     return matchesSearch && matchesType && matchesCity && matchesHot;
   });
 
+  // Функция для форматирования даты из ISO в читаемый вид
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center mt-20"><Loader className="animate-spin text-blue-600" size={48} /></div>;
   }
+
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
@@ -73,25 +84,47 @@ export default function ToursListPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTours.map(tour => {
-            const favorited = isFavorite(tour.id.toString()); // Хук очікує стрінги, тому toString()
+            const favorited = isFavorite(tour.id.toString());
+            // Перевіряємо чи тур прострочений
+            const isExpired = tour.date.split('T')[0] < todayStr;
+
             return (
-              <div key={tour.id} className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-lg relative flex flex-col transition-shadow">
+              <div key={tour.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-lg relative flex flex-col transition-all ${isExpired ? 'opacity-65' : ''}`}>
                 <button onClick={() => toggleFavorite(tour.id.toString())} className="absolute top-4 right-4 z-10 p-2 bg-white/80 rounded-full shadow-sm hover:bg-white transition-colors">
                   <Heart size={20} className={favorited ? "fill-red-500 text-red-500" : "text-gray-400"} />
                 </button>
                 <div className="p-5 flex flex-col h-full pt-12">
                   <div className="flex justify-between items-start mb-2">
                     <h2 className="text-xl font-semibold text-gray-800">{tour.name}</h2>
-                    {tour.isHot && <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold ml-2">HOT</span>}
+                    {tour.isHot && <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold ml-2 shrink-0">HOT</span>}
                   </div>
-                  <p className="text-gray-500 text-sm mb-4">📍 {tour.city}</p>
+                  <p className="text-gray-500 text-sm mb-3">📍 {tour.city}</p>
+                  
+                  {/* Додано тип та дату туру в менюшку (картку) */}
+                  <div className="space-y-1.5 mb-4 text-xs font-medium text-gray-600">
+                    <div className="flex items-center gap-1.5">
+                      <Tag size={14} className="text-blue-500" />
+                      <span>Тип: <span className="text-gray-800">{tour.type === 'Regular' ? 'Звичайний' : 'Екскурсійний'}</span></span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Calendar size={14} className="text-blue-500" />
+                      <span>Дата: <span className="text-gray-800">{formatDate(tour.date)}</span></span>
+                    </div>
+                  </div>
+
                   <div className="mt-auto pt-4 border-t">
                     <p className="text-2xl font-bold text-blue-600 mb-4">
                       {tour.isHot && tour.promotion ? tour.price - tour.promotion : tour.price} ₴
                     </p>
-                    <Link to={`/tour/${tour.id}`} className="block text-center w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
-                      Детальніше
-                    </Link>
+                    {isExpired ? (
+                      <div className="block text-center w-full bg-gray-100 text-gray-500 font-bold py-2.5 rounded-lg border border-gray-200 cursor-not-allowed">
+                        Тур завершено
+                      </div>
+                    ) : (
+                      <Link to={`/tour/${tour.id}`} className="block text-center w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+                        Детальніше
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
