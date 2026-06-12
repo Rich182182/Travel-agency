@@ -1,8 +1,5 @@
 ﻿using AutoMapper;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using TravelAgency.BLL.DTOs;
-using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.DAL.Interfaces;
@@ -49,6 +46,6 @@ namespace TravelAgency.BLL.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        
+
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TravelAgency.BLL.Exceptions
+﻿namespace TravelAgency.BLL.Exceptions
 {
     public class NotFoundException : Exception
     {
