@@ -3,6 +3,8 @@ using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.DAL.Interfaces;
+using TravelAgency.DAL.Entities.Enums;
+using System;
 
 namespace TravelAgency.BLL.Services
 {
@@ -23,7 +25,7 @@ namespace TravelAgency.BLL.Services
             return _mapper.Map<IEnumerable<UserDto>>(users);
         }
 
-        public async Task ChangeUserRoleAsync(int currentAdminId, int targetUserId, string newRole)
+        public async Task ChangeUserRoleAsync(int currentAdminId, int targetUserId, Role newRole)
         {
             if (currentAdminId == targetUserId)
             {
@@ -36,16 +38,14 @@ namespace TravelAgency.BLL.Services
                 throw new NotFoundException("Користувача не знайдено.");
             }
 
-            if (newRole != "Admin" && newRole != "Manager" && newRole != "Client")
-            {
-                throw new ValidationException("Недопустима роль.");
-            }
-
             user.Role = newRole;
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
         }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> fe760dd0bc3fb1c006159978b22355db455ea1c4
     }
 }

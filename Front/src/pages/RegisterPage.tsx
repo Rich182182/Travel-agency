@@ -25,11 +25,9 @@ export default function RegisterPage() {
       alert('Реєстрація успішна! Тепер ви можете увійти.');
       navigate('/login');
     } catch (err: any) {
-      // Витягуємо весь текст помилки, щоб перевірити ключові слова
       const errorData = JSON.stringify(err.response?.data || '').toLowerCase();
       const errorMsg = err.response?.data?.message?.toLowerCase() || '';
 
-      // ASP.NET Identity зазвичай кидає помилки з "DuplicateUserName" або "already taken"
       if (errorData.includes('duplicate') || errorData.includes('taken') || errorMsg.includes('вже існує')) {
         setError('Користувач з таким Email вже зареєстрований. Спробуйте увійти в акаунт.');
       } else {

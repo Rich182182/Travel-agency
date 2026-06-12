@@ -27,6 +27,7 @@ namespace TravelAgency.BLL
             services.AddScoped<IHotelService, HotelService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoomService, RoomService>();
+            services.AddScoped<IDbInitializationService, DbInitializationService>();
 
             return services;
         }
