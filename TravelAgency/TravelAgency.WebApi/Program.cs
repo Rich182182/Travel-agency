@@ -95,11 +95,6 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializationService>();
-    await dbInitializer.InitializeAsync();
-}
 
 if (app.Environment.IsDevelopment())
 {
@@ -113,6 +108,13 @@ app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializationService>();
+    await dbInitializer.InitializeAsync();
+}
+
 app.MapControllers();
 
 await app.RunAsync();
