@@ -11,6 +11,6 @@ namespace TravelAgency.BLL.DTOs
         public TourType Type { get; set; }
         public bool IsHot { get; set; }
         public decimal? Promotion { get; set; }
-        public List<UpdateTicketDto> Tickets { get; set; } = new(); // ← додати
+        public List<UpdateTicketDto> Tickets { get; set; } = new();
     }
 }

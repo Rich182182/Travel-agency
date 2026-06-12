@@ -33,6 +33,9 @@ namespace TravelAgency.BLL.Services
             if (dto.Date < DateTime.UtcNow.Date)
                 throw new ValidationException("Дата туру не може бути в минулому.");
 
+            if (dto.Tickets == null || dto.Tickets.Count == 0)
+                throw new ValidationException("Тур повинен містити хоча б 1 квиток.");
+
             var tour = new Tour
             {
                 Name = dto.Name,
@@ -81,7 +84,6 @@ namespace TravelAgency.BLL.Services
             if (tour == null)
                 throw new NotFoundException("Тур не знайдено.");
 
-            // VALIDATION
             if (string.IsNullOrWhiteSpace(dto.Name))
                 throw new ValidationException("Назва туру не може бути пустою.");
 
@@ -96,6 +98,7 @@ namespace TravelAgency.BLL.Services
 
             if (dto.Tickets == null || dto.Tickets.Count == 0)
                 throw new ValidationException("Тур повинен містити хоча б 1 квиток.");
+
 
             tour.Name = dto.Name;
             tour.Price = dto.Price;
@@ -169,13 +172,16 @@ namespace TravelAgency.BLL.Services
 
             return _mapper.Map<TourDto>(tour);
         }
-
         public async Task DeleteAsync(int id)
         {
             var tour = await _unitOfWork.Tours.GetByIdAsync(id);
 
             if (tour == null)
                 throw new NotFoundException("Тур не знайдено.");
+
+            var bookings = await _unitOfWork.Bookings.GetAllAsync();
+            if (bookings.Any(b => b.TourId == id))
+                throw new ValidationException("Неможливо видалити тур, бо є активні бронювання.");
 
             _unitOfWork.Tours.Delete(tour);
             await _unitOfWork.SaveChangesAsync();

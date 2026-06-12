@@ -2,7 +2,7 @@
 {
     public enum TourType
     {
-        Regular = 0,
-        Excursion = 1
+        Excursion,
+        Regular
     }
 }

@@ -1,3 +1,4 @@
+using TravelAgency.BLL.DTOs.Enums;
 namespace TravelAgency.BLL.DTOs
 {
     public class TourDto
@@ -8,7 +9,7 @@ namespace TravelAgency.BLL.DTOs
         public string City { get; set; }
         public DateTime Date { get; set; }
         public string Description { get; set; }
-        public string Type { get; set; }
+        public TourType Type { get; set; }
         public bool IsHot { get; set; }
         public decimal? Promotion { get; set; }
         public List<TicketDto> Tickets { get; set; } = new();
