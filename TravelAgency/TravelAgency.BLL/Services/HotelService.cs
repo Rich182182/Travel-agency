@@ -61,6 +61,17 @@ namespace TravelAgency.BLL.Services
             if (hotel == null)
                 throw new NotFoundException("Готель не знайдено.");
 
+            var rooms = (await _unitOfWork.Rooms.GetAllAsync())
+                .Where(r => r.HotelId == id)
+                .ToList();
+
+            var roomIds = rooms.Select(r => r.Id).ToList();
+
+            var bookings = await _unitOfWork.Bookings.GetAllAsync();
+
+            if (bookings.Any(b => b.RoomId.HasValue && roomIds.Contains(b.RoomId.Value)))
+                throw new ValidationException("Неможливо видалити готель, оскільки його кімнати використовуються в бронюваннях.");
+
             _unitOfWork.Hotels.Delete(hotel);
             await _unitOfWork.SaveChangesAsync();
         }

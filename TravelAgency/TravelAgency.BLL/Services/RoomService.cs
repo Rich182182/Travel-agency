@@ -70,12 +70,21 @@ namespace TravelAgency.BLL.Services
 
         public async Task DeleteAsync(int id)
         {
+
             var room = await _unitOfWork.Rooms.GetByIdAsync(id);
 
             if (room == null)
+
                 throw new NotFoundException("Кімнату не знайдено.");
 
+            var bookings = await _unitOfWork.Bookings.GetAllAsync();
+
+            if (bookings.Any(b => b.RoomId == id))
+
+                throw new ValidationException("Неможливо видалити кімнату, оскільки вона використовується в бронюваннях.");
+
             _unitOfWork.Rooms.Delete(room);
+
             await _unitOfWork.SaveChangesAsync();
         }
 
