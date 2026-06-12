@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using TravelAgency.BLL.DTOs;
-using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.DAL.Entities;
 
@@ -11,7 +10,7 @@ namespace TravelAgency.BLL.Mapping
         public BookingDomainProfile()
         {
             CreateMap<RegisterUserDto, User>()
-                            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => "Client")) 
+                            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => "Client"))
                             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
             CreateMap<Booking, BookingDto>();

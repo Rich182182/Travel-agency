@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using TravelAgency.BLL.DTOs;
-using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.WebApi.Models.Requests;
@@ -49,7 +46,7 @@ namespace TravelAgency.WebApi.Controllers
             return Ok(new { message = $"Роль успішно змінено на {dto.NewRole}" });
         }
 
-        
+
         private int GetCurrentUserId()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

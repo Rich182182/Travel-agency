@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using TravelAgency.BLL.Interfaces;
+using TravelAgency.BLL.Services;
+using TravelAgency.DAL;
 using TravelAgency.BLL.Mapping;
-using TravelAgency.DAL; 
+using TravelAgency.DAL;
 namespace TravelAgency.BLL;
 
 public static class DependencyInjection

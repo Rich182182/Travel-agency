@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.DTOs.Users;
 using TravelAgency.BLL.Exceptions;
@@ -23,7 +19,7 @@ namespace TravelAgency.BLL.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration; 
+        private readonly IConfiguration _configuration;
 
         public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration)
         {

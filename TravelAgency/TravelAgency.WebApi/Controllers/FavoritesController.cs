@@ -2,7 +2,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using TravelAgency.BLL.DTOs;
 using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
@@ -47,7 +46,7 @@ namespace TravelAgency.WebApi.Controllers
             int userId = GetCurrentUserId();
 
             var dto = _mapper.Map<AddFavoriteDto>(request);
-            dto.TourId = validTourId; // Примусово ставимо правильний ID
+            dto.TourId = validTourId;
 
             await _favoriteService.AddToFavoritesAsync(userId, dto);
 

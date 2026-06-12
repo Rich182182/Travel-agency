@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace TravelAgency.BLL.DTOs
 {
     public class HotelDto

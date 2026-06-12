@@ -4,7 +4,6 @@ using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.DAL.Entities;
 using TravelAgency.DAL.Interfaces;
-using TravelAgency.DAL.Repositories;
 
 namespace TravelAgency.BLL.Services
 {
@@ -80,7 +79,7 @@ namespace TravelAgency.BLL.Services
                 var room = await _unitOfWork.Rooms.GetByIdAsync(booking.RoomId.Value);
                 if (room != null)
                 {
-                    room.IsFree = true; 
+                    room.IsFree = true;
                     _unitOfWork.Rooms.Update(room);
                 }
             }

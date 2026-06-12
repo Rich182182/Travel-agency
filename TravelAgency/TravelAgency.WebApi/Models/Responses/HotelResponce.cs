@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace TravelAgency.WebApi.Models.Responses
 {
     public class HotelResponse
