@@ -8,7 +8,7 @@ export interface User {
 
 export interface Ticket {
   id: number;
-  type: string; // 'Airplane' | 'Bus'
+  type: string;
   price: number;
 }
 

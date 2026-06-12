@@ -89,7 +89,6 @@ export default function MyBookingsPage() {
     return typeStr || 'Невідомо';
   };
 
-  // ФІКС ПЕРЕКЛАДУ ТИПУ НОМЕРА
   const translateRoomType = (typeStr?: string) => {
     if (typeStr === 'Standart') return 'Стандарт';
     if (typeStr === 'Lux') return 'Люкс';

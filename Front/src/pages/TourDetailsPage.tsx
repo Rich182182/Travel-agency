@@ -29,7 +29,6 @@ export default function TourDetailsPage() {
           HotelsAPI.getAll()
         ]);
         setTour(tourRes.data);
-        // ФІКС: Явно вказуємо, що h - це Hotel
         setAvailableHotels(hotelsRes.data.filter((h: Hotel) => h.city === tourRes.data.city));
       } catch (error) {
         showToast(parseBackendError(error), 'error');
@@ -194,7 +193,6 @@ export default function TourDetailsPage() {
             <h3 className="font-semibold text-gray-700 mb-3">Оберіть готель: <span className="text-red-500">*</span></h3>
             <select className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500" 
               onChange={(e) => {
-                // ФІКС: Явно вказуємо, що h - це Hotel
                 const hotel = availableHotels.find((h: Hotel) => h.id === Number(e.target.value)) || null;
                 setSelectedHotel(hotel);
                 setSelectedRoom(null);
@@ -203,7 +201,6 @@ export default function TourDetailsPage() {
               disabled={isExpired}
             >
               <option value="" disabled>-- Оберіть готель --</option>
-              {/* ФІКС: Явно вказуємо, що h - це Hotel */}
               {availableHotels.map((h: Hotel) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
 

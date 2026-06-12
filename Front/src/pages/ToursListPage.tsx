@@ -87,7 +87,7 @@ export default function ToursListPage() {
             const isExpired = tour.date.split('T')[0] < todayStr;
 
             return (
-              <div key={tour.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-lg relative flex flex-col transition-all ${isExpired ? 'opacity-65 grayscale-[30%]' : ''}`}>
+              <div key={tour.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-lg relative flex flex-col transition-all ${isExpired ? 'opacity-65 grayscale-30' : ''}`}>
                 
                 <button onClick={() => toggleFavorite(tour.id.toString())} className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform">
                   <Heart size={20} className={favorited ? "fill-red-500 text-red-500" : "text-gray-400"} />
@@ -97,7 +97,7 @@ export default function ToursListPage() {
                   
                   <div className="flex flex-wrap items-center gap-2 mb-3 pr-12">
                     <h2 className="text-xl font-bold text-gray-800 leading-tight">{tour.name}</h2>
-                    {tour.isHot && <span className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-full font-bold tracking-wider uppercase shadow-sm">HOT</span>}
+                    {tour.isHot && <span className="bg-linear-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-full font-bold tracking-wider uppercase shadow-sm">HOT</span>}
                   </div>
                   
                   <div className="space-y-2 mb-6 text-sm font-medium text-gray-600">
@@ -116,7 +116,6 @@ export default function ToursListPage() {
                   </div>
 
                   <div className="mt-auto pt-4 border-t">
-                    {/* Вивід знижки у відсотках */}
                     {tour.isHot && tour.promotion ? (
                       <div className="mb-4">
                          <span className="text-sm text-gray-400 line-through font-medium block">{tour.price} ₴</span>

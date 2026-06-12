@@ -16,7 +16,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // При завантаженні сайту перевіряємо, чи є токен
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token');

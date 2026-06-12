@@ -32,9 +32,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     <NotificationContext.Provider value={{ showToast, openConfirm }}>
       {children}
 
-      {/* TOAST NOTIFICATION */}
       {toast && (
-        <div className={`fixed bottom-8 right-8 z-[100] flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border bg-white animate-in slide-in-from-bottom-10 fade-in duration-300 ${
+        <div className={`fixed bottom-8 right-8 z-100 flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border bg-white animate-in slide-in-from-bottom-10 fade-in duration-300 ${
           toast.type === 'success' ? 'border-green-200 text-green-800 bg-green-50' : 'border-red-200 text-red-800 bg-red-50'
         }`}>
           {toast.type === 'success' ? <CheckCircle className="text-green-600" size={24} /> : <AlertCircle className="text-red-600" size={24} />}
@@ -45,9 +44,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         </div>
       )}
 
-      {/* CONFIRM MODAL */}
       {confirmModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-100 animate-in zoom-in-95 duration-200">
             <div className="flex items-start gap-4 mb-6">
               <div className="bg-red-100 p-3 rounded-full text-red-600 shrink-0 mt-1">

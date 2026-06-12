@@ -18,7 +18,6 @@ export default function AdminPanelPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
-  // ДОДАНО: Зберігаємо оригінальний стан туру, щоб порівнювати зміни
   const [originalTour, setOriginalTour] = useState<Tour | null>(null); 
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
 
@@ -67,7 +66,7 @@ export default function AdminPanelPage() {
   };
 
   const normalizeRole = (roleStr?: string) => {
-    if (!roleStr) return 'Registered';
+    if (!roleStr) return 'Client';
     return roleStr.charAt(0).toUpperCase() + roleStr.slice(1).toLowerCase();
   };
 
@@ -77,7 +76,6 @@ export default function AdminPanelPage() {
     return (formatted === 'Excursion') ? 'Excursion' : 'Regular';
   };
 
-  // Розділяємо процес збереження на 2 етапи: перевірка і сам запит
   const handleSaveTourClick = () => {
     if (!editingTour) return;
 
@@ -101,7 +99,6 @@ export default function AdminPanelPage() {
       return;
     }
 
-    // ДОДАНО: Перевірка на зміну критичних полів існуючого туру
     if (editingTour.id !== 0 && originalTour) {
       const typeChanged = formatTourType(editingTour.type) !== formatTourType(originalTour.type);
       const cityChanged = editingTour.city.trim() !== originalTour.city.trim();
@@ -112,14 +109,13 @@ export default function AdminPanelPage() {
           "Ви змінюєте тип туру або його місто. Якщо цей тур вже заброньовано клієнтами, це може спричинити серйозні помилки в їхніх особистих кабінетах! Рекомендується не змінювати ці параметри, а створити новий тур. Ви впевнені, що хочете продовжити?",
           () => executeTourSave()
         );
-        return; // Зупиняємо функцію, чекаємо підтвердження
+        return;
       }
     }
 
     executeTourSave();
   };
 
-  // Безпосереднє збереження на сервер
   const executeTourSave = async () => {
     if (!editingTour) return;
     try {
@@ -284,7 +280,6 @@ export default function AdminPanelPage() {
         <button onClick={() => setActiveTab('hotels')} className={`flex items-center gap-2 px-6 py-3 font-medium border-b-2 ${activeTab === 'hotels' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}><Building size={20} /> Готелі</button>
       </div>
 
-      {/* ВКЛАДКА: КОРИСТУВАЧІ */}
       {activeTab === 'users' && user.role === 'Admin' && (
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <table className="w-full text-left">
@@ -312,7 +307,7 @@ export default function AdminPanelPage() {
                       >
                         <option value="Admin">Admin</option>
                         <option value="Manager">Manager</option>
-                        <option value="Registered">Registered</option>
+                        <option value="Client">Client</option>
                       </select>
                     </td>
                   </tr>
@@ -323,7 +318,6 @@ export default function AdminPanelPage() {
         </div>
       )}
 
-      {/* ВКЛАДКА: ТУРИ */}
       {activeTab === 'tours' && (
         <div>
           {!editingTour ? (
@@ -347,7 +341,6 @@ export default function AdminPanelPage() {
                         <td className="p-4 flex gap-2">
                           <button 
                             onClick={() => {
-                              // Зберігаємо оригінал при відкритті
                               setOriginalTour({ ...t, date: t.date.split('T')[0], tickets: t.tickets || [] });
                               setEditingTour({ ...t, date: t.date.split('T')[0], tickets: t.tickets || [] });
                             }} 
@@ -394,7 +387,7 @@ export default function AdminPanelPage() {
                 
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Промоакція</label>
-                  <div className="flex items-center gap-4 border p-1.5 rounded min-h-[42px] bg-white">
+                  <div className="flex items-center gap-4 border p-0.75 rounded min-h-10.5 bg-white">
                     <label className="flex items-center gap-2 cursor-pointer font-medium whitespace-nowrap pl-1 text-sm">
                       <input type="checkbox" checked={editingTour.isHot} onChange={e => setEditingTour({...editingTour, isHot: e.target.checked})} className="w-4 h-4 text-blue-600 shrink-0" />
                       Гарячий тур
@@ -444,7 +437,7 @@ export default function AdminPanelPage() {
                           n[index].type = e.target.value; 
                           setEditingTour({...editingTour, tickets: n}); 
                         }} 
-                        className="p-2 border rounded flex-grow bg-white focus:ring-2 focus:ring-blue-500"
+                        className="p-2 border rounded grow bg-white focus:ring-2 focus:ring-blue-500"
                       >
                         {(!usedTypes.includes('Airplane') || currentNormType === 'Airplane') && <option value="Airplane">Авіа (Літак)</option>}
                         {(!usedTypes.includes('Bus') || currentNormType === 'Bus') && <option value="Bus">Автобус</option>}
@@ -469,14 +462,12 @@ export default function AdminPanelPage() {
                   );
                 })}
               </div>
-              {/* ВИКЛИКАЄМО НОВУ ФУНКЦІЮ ПЕРЕВІРКИ */}
               <button onClick={handleSaveTourClick} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg"><Save size={20} className="inline mr-2" /> Зберегти тур</button>
             </div>
           )}
         </div>
       )}
 
-      {/* ВКЛАДКА: ГОТЕЛІ */}
       {activeTab === 'hotels' && (
         <div>
           {!editingHotel ? (
@@ -505,11 +496,11 @@ export default function AdminPanelPage() {
             <div className="bg-white p-6 rounded-xl border shadow-sm max-w-3xl">
               <div className="flex justify-between items-center mb-6"><h2 className="text-2xl font-bold">{editingHotel.id === 0 ? 'Новий готель' : 'Редагувати готель'}</h2><button onClick={() => setEditingHotel(null)}><X size={24} /></button></div>
               <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex-grow">
+                <div className="grow">
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Назва готелю <span className="text-red-500">*</span></label>
                   <input type="text" placeholder="Назва" value={editingHotel.name} onChange={e => setEditingHotel({...editingHotel, name: e.target.value})} className="p-2 w-full border rounded focus:ring-2 focus:ring-blue-500" />
                 </div>
-                <div className="flex-grow">
+                <div className="grow">
                   <label className="block text-xs font-semibold text-gray-500 mb-1">Місто <span className="text-red-500">*</span></label>
                   <input type="text" placeholder="Місто (має збігатися з туром)" value={editingHotel.city} onChange={e => setEditingHotel({...editingHotel, city: e.target.value})} className="p-2 w-full border rounded focus:ring-2 focus:ring-blue-500" />
                 </div>
@@ -530,7 +521,7 @@ export default function AdminPanelPage() {
                       <select 
                         value={room.roomType || 'Standart'} 
                         onChange={e => { const n = [...editingHotel.rooms!]; n[index].roomType = e.target.value as any; setEditingHotel({...editingHotel, rooms: n}); }} 
-                        className="p-2 border rounded flex-grow w-full md:w-auto focus:ring-2 focus:ring-blue-500"
+                        className="p-2 border rounded grow w-full md:w-auto focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="Standart">Стандарт</option>
                         <option value="Lux">Люкс</option>

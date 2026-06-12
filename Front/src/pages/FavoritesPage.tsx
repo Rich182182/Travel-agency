@@ -8,12 +8,11 @@ import type { Tour } from '../types';
 
 export default function FavoritesPage() {
   const { favorites, toggleFavorite } = useFavorites();
-  const { user } = useAuth(); // Підтягуємо інфо про юзера
+  const { user } = useAuth();
   const [allTours, setAllTours] = useState<Tour[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Якщо юзера немає, навіть не робимо запит на сервер
     if (!user) {
       setIsLoading(false);
       return;
@@ -42,7 +41,6 @@ export default function FavoritesPage() {
     }
   };
 
-  // ФІКС: Захист сторінки від неавторизованих користувачів
   if (!user) {
     return (
       <div className="max-w-7xl mx-auto p-4 md:p-8 mt-10">
@@ -89,7 +87,7 @@ export default function FavoritesPage() {
             const isExpired = tour.date.split('T')[0] < todayStr;
             
             return (
-              <div key={tour.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col relative hover:shadow-lg transition-all ${isExpired ? 'opacity-65 grayscale-[30%]' : ''}`}>
+              <div key={tour.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col relative hover:shadow-lg transition-all ${isExpired ? 'opacity-65 grayscale-30' : ''}`}>
                 <button 
                   onClick={() => toggleFavorite(tour.id.toString())}
                   className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform"
@@ -102,7 +100,7 @@ export default function FavoritesPage() {
                   
                   <div className="flex flex-wrap items-center gap-2 mb-3 pr-12">
                     <h2 className="text-xl font-bold text-gray-800 leading-tight">{tour.name}</h2>
-                    {tour.isHot && <span className="bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-full font-bold tracking-wider uppercase shadow-sm">HOT</span>}
+                    {tour.isHot && <span className="bg-linear-to-r from-red-500 to-orange-500 text-white text-[10px] px-2 py-1 rounded-full font-bold tracking-wider uppercase shadow-sm">HOT</span>}
                   </div>
                   
                   <div className="space-y-2 mb-6 text-sm font-medium text-gray-600">
