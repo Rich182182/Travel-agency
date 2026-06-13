@@ -50,7 +50,7 @@ namespace TravelAgency.WebApi.Controllers
 
             await _favoriteService.AddToFavoritesAsync(userId, dto);
 
-            return Ok(new MessageResponse { Message = "Тур додано до улюблених" });
+            return Ok();
         }
 
         [HttpDelete("{tourId}")]

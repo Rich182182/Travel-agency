@@ -39,7 +39,7 @@ namespace TravelAgency.BLL.Services
             var newUser = _mapper.Map<User>(dto);
 
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            newUser.Role = Role.Client; // <--- Видаємо стандартну роль при реєстрації
+            newUser.Role = Role.Client;
 
             await _unitOfWork.Users.AddAsync(newUser);
             await _unitOfWork.SaveChangesAsync();
@@ -64,7 +64,7 @@ namespace TravelAgency.BLL.Services
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Role, user.Role.ToString()) // <--- Конвертуємо у тип string
+                    new Claim(ClaimTypes.Role, user.Role.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiryMinutes"])),
                 Issuer = _configuration["JwtSettings:Issuer"],

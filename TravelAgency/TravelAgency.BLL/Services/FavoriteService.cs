@@ -3,16 +3,19 @@ using TravelAgency.BLL.Exceptions;
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.DAL.Entities;
 using TravelAgency.DAL.Interfaces;
+using AutoMapper;
 
 namespace TravelAgency.BLL.Services
 {
     public class FavoriteService : IFavoriteService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public FavoriteService(IUnitOfWork unitOfWork)
+        public FavoriteService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<string>> GetUserFavoritesAsync(int userId)
@@ -38,11 +41,8 @@ namespace TravelAgency.BLL.Services
 
             if (!alreadyExists)
             {
-                var favorite = new FavoriteTour
-                {
-                    UserId = userId,
-                    TourId = dto.TourId
-                };
+                var favorite = _mapper.Map<FavoriteTour>(dto);
+                favorite.UserId = userId;
 
                 await _unitOfWork.FavoriteTours.AddAsync(favorite);
                 await _unitOfWork.SaveChangesAsync();

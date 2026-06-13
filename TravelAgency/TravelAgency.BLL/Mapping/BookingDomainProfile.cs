@@ -10,8 +10,8 @@ namespace TravelAgency.BLL.Mapping
         public BookingDomainProfile()
         {
             CreateMap<RegisterUserDto, User>()
-                            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => "Client"))
-                            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => "Client"))
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
             CreateMap<Booking, BookingDto>();
             CreateMap<CreateBookingDto, Booking>()

@@ -42,11 +42,7 @@ namespace TravelAgency.WebApi.Controllers
             var result = await _authService.LoginAsync(dto);
 
 
-            var response = new AuthResponse
-            {
-                Token = result.Token,
-                Role = result.Role
-            };
+            var response = _mapper.Map<AuthResponse>(result);
 
             return Ok(response);
         }

@@ -99,7 +99,6 @@ builder.Services.AddAutoMapper(cfg =>
 
 builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
-    containerBuilder.RegisterModule(new DalModule());
     containerBuilder.RegisterModule(new BllModule());
 });
 
