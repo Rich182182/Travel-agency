@@ -59,7 +59,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Введіть JWT токен у форматі: Bearer {ваш_токен}\nНаприклад: Bearer eyJhbGciOiJIUzI1NiI...",
+        Description = "example: Bearer eyJhbGciOiJIUzI1NiI...",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
