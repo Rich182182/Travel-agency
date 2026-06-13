@@ -33,7 +33,7 @@ namespace TravelAgency.WebApi.Controllers
         {
             var hotel = await _hotelService.GetByIdAsync(id);
             return Ok(hotel);
-            
+
         }
 
         [Authorize(Roles = "Admin,Manager")]
