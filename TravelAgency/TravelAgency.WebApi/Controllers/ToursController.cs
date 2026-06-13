@@ -57,7 +57,11 @@ namespace TravelAgency.WebApi.Controllers
             var dto = _mapper.Map<CreateTourDto>(request);
             var result = await _tourService.CreateAsync(dto);
 
-            return Ok(result);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = result.Id },
+                result
+            );
         }
 
         [Authorize(Roles = "Admin,Manager")]
@@ -75,7 +79,7 @@ namespace TravelAgency.WebApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _tourService.DeleteAsync(id);
-            return Ok(new { message = "Тур видалено" });
+            return NoContent();
         }
 
         [HttpGet("city/{city}")]

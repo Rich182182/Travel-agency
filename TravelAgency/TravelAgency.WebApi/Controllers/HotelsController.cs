@@ -33,9 +33,13 @@ namespace TravelAgency.WebApi.Controllers
         {
             var hotel = await _hotelService.GetByIdAsync(id);
             return Ok(hotel);
+<<<<<<< HEAD
 
         }
+=======
+>>>>>>> tours-module
 
+        }
         [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateHotelRequest request)
@@ -43,8 +47,7 @@ namespace TravelAgency.WebApi.Controllers
             var dto = _mapper.Map<CreateHotelDto>(request);
             var result = await _hotelService.CreateAsync(dto);
 
-            return Ok(result);
-
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         [Authorize(Roles = "Admin,Manager")]
@@ -63,8 +66,7 @@ namespace TravelAgency.WebApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _hotelService.DeleteAsync(id);
-            return Ok(new { message = "Готель видалено" });
-
+            return NoContent();
         }
     }
 }

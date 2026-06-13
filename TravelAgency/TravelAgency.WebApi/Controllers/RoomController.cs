@@ -36,7 +36,12 @@ namespace TravelAgency.WebApi.Controllers
         public async Task<IActionResult> Create(int hotelId, [FromBody] CreateRoomDto dto)
         {
             var result = await _roomService.CreateAsync(hotelId, dto);
-            return Ok(result);
+
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = result.Id },
+                result
+            );
         }
 
         [Authorize(Roles = "Admin,Manager")]
@@ -52,7 +57,7 @@ namespace TravelAgency.WebApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _roomService.DeleteAsync(id);
-            return Ok(new { message = "Номер видалено" });
+            return NoContent();
         }
     }
 }
