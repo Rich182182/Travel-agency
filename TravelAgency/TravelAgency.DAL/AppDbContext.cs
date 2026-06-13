@@ -19,7 +19,6 @@ namespace TravelAgency.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Підтягує всі IEntityTypeConfiguration з вашого проекту
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }

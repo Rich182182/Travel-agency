@@ -21,6 +21,7 @@ namespace TravelAgency.DAL.Configurations
                             .IsRequired();
 
                      builder.Property(u => u.Role)
+                            .HasConversion<string>()
                             .IsRequired()
                             .HasMaxLength(20);
 

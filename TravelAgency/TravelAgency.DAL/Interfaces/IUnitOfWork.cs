@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Threading.Tasks;
-using TravelAgency.DAL.Entities;
+﻿using TravelAgency.DAL.Entities;
 
 namespace TravelAgency.DAL.Interfaces
 {

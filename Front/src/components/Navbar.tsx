@@ -4,14 +4,16 @@ import { Map, Search, LogOut, LogIn, Settings, Briefcase, User as UserIcon, Hear
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { AuthAPI } from '../api/client';
+import { useNotification } from '../context/NotificationContext';
+import { parseBackendError } from '../api/errorHandler';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, logout } = useAuth();
   const { favorites } = useFavorites();
+  const { showToast, openConfirm } = useNotification();
   const [searchValue, setSearchValue] = useState(searchParams.get('search') || '');
-  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -20,19 +22,21 @@ export default function Navbar() {
     else navigate('/');
   };
 
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('Ви впевнені, що хочете назавжди видалити свій акаунт? Цю дію неможливо скасувати!')) {
-      return;
-    }
-    
-    try {
-      await AuthAPI.deleteMe();
-      logout();
-      navigate('/');
-      alert('Ваш акаунт було успішно видалено.');
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Помилка при видаленні акаунта.');
-    }
+  const handleDeleteAccount = () => {
+    openConfirm(
+      "Видалити акаунт?",
+      "Ви впевнені, що хочете назавжди видалити свій акаунт? Цю дію неможливо скасувати!",
+      async () => {
+        try {
+          await AuthAPI.deleteMe();
+          logout();
+          navigate('/');
+          showToast('Ваш акаунт було успішно видалено', 'success');
+        } catch (error: any) {
+          showToast(parseBackendError(error), 'error');
+        }
+      }
+    );
   };
 
   return (
@@ -43,7 +47,6 @@ export default function Navbar() {
           <Map size={28} /><span>Турагенція</span>
         </Link>
 
-        {/* ОНОВЛЕНИЙ ДИЗАЙН ПОШУКУ */}
         <form onSubmit={handleSearch} className="w-full md:w-1/3 flex relative text-gray-800 group">
           <input
             type="text" placeholder="Куди хочете поїхати?"
@@ -77,7 +80,6 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {/* ВИПАДАЮЧЕ МЕНЮ ЮЗЕРА */}
               <div 
                 className="relative ml-4 pl-4 border-l border-blue-400"
                 onMouseEnter={() => setIsMenuOpen(true)} 

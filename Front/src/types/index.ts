@@ -1,5 +1,4 @@
-export type TourType = 'Regular' | 'Excursion';
-export type Role = 'Admin' | 'Manager' | 'Registered' | 'Guest';
+export type Role = 'Admin' | 'Manager' | 'Client';
 
 export interface User {
   id: number;
@@ -7,17 +6,35 @@ export interface User {
   role: Role;
 }
 
+export type TicketType = 'Airplane' | 'Bus' | 'Train' | 'Ship';
+
 export interface Ticket {
-  id?: number;
-  type: string;
+  id: number;
+  type: TicketType; 
   price: number;
 }
 
-export interface Room {
+export interface Tour {
   id: number;
   name: string;
+  city: string;
+  description: string;
+  price: number;
+  date: string;
+  type: 'Regular' | 'Excursion';
+  isHot: boolean;
+  promotion: number;
+  tickets: Ticket[];
+}
+
+export type RoomType = 'Standart' | 'Lux' | 'Deluxe';
+
+export interface Room {
+  id: number;
+  roomType: RoomType;
   price: number;
   isFree: boolean;
+  hotelId?: number;
 }
 
 export interface Hotel {
@@ -27,23 +44,9 @@ export interface Hotel {
   rooms?: Room[];
 }
 
-export interface Tour {
-  id: number;
-  name: string;
-  price: number;
-  city: string;
-  description: string;
-  date: string;
-  type: TourType;
-  promotion?: number;
-  tickets: Ticket[];
-  isHot?: boolean; // Якщо бекенд повертає це поле
-}
-
 export interface Booking {
   id: number;
   tourId: number;
   ticketId?: number;
   roomId?: number;
-  totalPrice?: number;
 }

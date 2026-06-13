@@ -1,14 +1,19 @@
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using TravelAgency.BLL;
-using TravelAgency.WebApi.Extensions;
-using TravelAgency.WebApi.Mapping;
 using System.Text.Json.Serialization;
+using TravelAgency.BLL;
+using TravelAgency.DAL;
+using TravelAgency.BLL.Interfaces;
 using TravelAgency.WebApi.Infrastructure;
+using TravelAgency.WebApi.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.Services.AddCors(options =>
 {
@@ -20,6 +25,7 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
 
@@ -81,7 +87,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddBusinessLogicLayer(connectionString);
+builder.Services.AddBllInfrastructure(connectionString);
 
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -89,6 +95,12 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<WebApiTourProfile>();
     cfg.AddProfile<WebApiHotelProfile>();
     cfg.AddProfile<WebApiRoomProfile>();
+});
+
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+{
+    containerBuilder.RegisterModule(new DalModule());
+    containerBuilder.RegisterModule(new BllModule());
 });
 
 var app = builder.Build();
@@ -107,8 +119,13 @@ app.UseCors("AllowReactApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 
-await app.SeedAdminAsync();
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializationService>();
+    await dbInitializer.InitializeAsync();
+}
+
+app.MapControllers();
 
 await app.RunAsync();

@@ -2,34 +2,24 @@
 using TravelAgency.BLL.Interfaces;
 using TravelAgency.BLL.Services;
 using TravelAgency.DAL;
-using System.Reflection;
 using TravelAgency.BLL.Mapping;
+using TravelAgency.DAL;
+namespace TravelAgency.BLL;
 
-namespace TravelAgency.BLL
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddBllInfrastructure(this IServiceCollection services, string connectionString)
     {
-        public static IServiceCollection AddBusinessLogicLayer(this IServiceCollection services, string connectionString)
+        services.AddDalInfrastructure(connectionString);
+
+        services.AddAutoMapper(cfg =>
         {
-            services.AddDataAccessLayer(connectionString);
+            cfg.AddProfile<BookingDomainProfile>();
+            cfg.AddProfile<TourDomainProfile>();
+            cfg.AddProfile<HotelDomainProfile>();
+            cfg.AddProfile<RoomDomainProfile>();
+        });
 
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddProfile<BookingDomainProfile>();
-                cfg.AddProfile<TourDomainProfile>();
-                cfg.AddProfile<HotelDomainProfile>();
-                cfg.AddProfile<RoomDomainProfile>();
-            });
-            services.AddScoped<IBookingService, BookingService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ITourService, TourService>();
-            services.AddScoped<IFavoriteService, FavoriteService>();
-            services.AddScoped<IHotelService, HotelService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IRoomService, RoomService>();
-
-            return services;
-        }
+        return services;
     }
 }
