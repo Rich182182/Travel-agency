@@ -4,20 +4,6 @@ A full-stack travel agency booking platform built with **ASP.NET Core 9** and **
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Getting Started](#getting-started)
-- [API Endpoints](#api-endpoints)
-- [Project Structure](#project-structure)
-- [Testing](#testing)
-- [Screenshots](#screenshots)
-
----
-
 ## Overview
 
 This project was built as a complete solution for a travel agency business, covering the full user journey — from browsing available tours to completing a booking with transport tickets and hotel rooms. The backend follows a clean **3-layer architecture** (DAL → BLL → API), while the frontend is a modern **SPA** built with React and TypeScript.
