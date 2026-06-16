@@ -280,7 +280,7 @@ dotnet test
 ## 🌱 Database Seeding
 
 On first launch the app automatically seeds:
-- **1 Admin** account (`admin@gmail.com` / `123`)
+- **1 Admin** account (`admin@gmail.com` / `1234567`)
 - **26 Hotels** across 9 cities (Київ, Варшава, Краків, Париж, Рим, Анталія, Стамбул, Барселона, Дубай)
 - **130+ Rooms** of types Standard / Deluxe / Lux with randomized prices
 - **16 Tours** (Regular + Excursion) spread across future dates
